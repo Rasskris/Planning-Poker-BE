@@ -21,11 +21,12 @@ class App {
   }
 
   private initializeMiddlewares() {
-    this.app.use(json({ limit: '50mb' }));
-    this.app.use(urlencoded({ limit: '50mb', extended: true }));
-    this.app.use(cors());
-    this.app.use(errorMiddleware);
-    this.app.use(loggerMiddleware);
+    this.app
+      .use(json({ limit: '50mb' }))
+      .use(urlencoded({ limit: '50mb', extended: true }))
+      .use(cors())
+      .use(errorMiddleware)
+      .use(loggerMiddleware);
   }
 }
 
