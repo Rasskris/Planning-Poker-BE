@@ -1,6 +1,5 @@
 import App from "./app";
-
-const PORT = 3000;
+import { PORT } from "./constants";
 
 const app = new App(PORT);
 
