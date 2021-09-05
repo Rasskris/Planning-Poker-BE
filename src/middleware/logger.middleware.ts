@@ -5,4 +5,4 @@ const loggerMiddleware = (req: Request, _: Response, next: NextFunction) => {
   next();
 };
 
-export default loggerMiddleware;
+export { loggerMiddleware };

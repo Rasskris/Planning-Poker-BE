@@ -1,2 +1,2 @@
-export { default as errorMiddleware } from './error.middleware';
-export { default as loggerMiddleware } from './logger.middleware';
+export { errorMiddleware } from './error.middleware';
+export { loggerMiddleware } from './logger.middleware';
