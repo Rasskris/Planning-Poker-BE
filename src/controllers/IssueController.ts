@@ -2,7 +2,7 @@ import { Request, Response, NextFunction, Router } from 'express';
 import { Controller } from '../interfaces';
 import { Issue } from '../models';
 import { emitIssueEdit } from '../socket';
-import { ERROR_OF_FETCH, ERROR_OF_SAVE, ERROR_OF_UPDATE, ERROR_OF_DELETE } from '../constants';
+import { FETCH_ERROR, SAVE_ERROR, UPDATE_ERROR, DELETE_ERROR } from '../constants';
 
 class IssueController implements Controller {
   public path = '/issues';
@@ -27,7 +27,7 @@ class IssueController implements Controller {
       const issues = await this.issue.find({ gameId }).exec();
 
       if (!issues) {
-        throw new Error(ERROR_OF_FETCH);
+        throw new Error(FETCH_ERROR);
       }
       res.send(issues);
     } catch(err) {
@@ -41,7 +41,7 @@ class IssueController implements Controller {
       const savedIssue = await issue.save();
 
       if (!savedIssue) {
-        throw new Error(ERROR_OF_SAVE);
+        throw new Error(SAVE_ERROR);
       }
 
       emitIssueEdit(savedIssue.creatorId, savedIssue);
@@ -57,7 +57,7 @@ class IssueController implements Controller {
       const updatedIssue = await this.issue.findByIdAndUpdate(issue.id, issue, { new: true });
 
       if (!updatedIssue) {
-        throw new Error(ERROR_OF_UPDATE);
+        throw new Error(UPDATE_ERROR);
       }
 
       emitIssueEdit(updatedIssue.creatorId, updatedIssue);
@@ -73,7 +73,7 @@ class IssueController implements Controller {
       const deletedIssue = await this.issue.findByIdAndDelete(issueId);
 
       if (!deletedIssue) {
-        throw new Error(ERROR_OF_DELETE);
+        throw new Error(DELETE_ERROR);
       }
 
       emitIssueEdit(deletedIssue.creatorId, deletedIssue);

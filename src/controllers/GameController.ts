@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import { Controller } from '../interfaces';
 import { Game } from '../models';
-import { emitLeaveMember } from '../socket';
-import { ERROR_OF_DELETE } from '../constants';
+import { DELETE_ERROR } from '../constants';
 import { deleteUsersByGameId, deleteIssuesByGameId, deleteMessagesByGameId } from '../models';
 
 class GameController implements Controller {
@@ -25,7 +24,7 @@ class GameController implements Controller {
       const deletedGame = await this.game.findByIdAndDelete(id);
 
       if (!deletedGame) {
-        throw new Error(ERROR_OF_DELETE);
+        throw new Error(DELETE_ERROR);
       }
       await deleteUsersByGameId(id);
       await deleteMessagesByGameId(id);

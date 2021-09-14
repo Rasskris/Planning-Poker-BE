@@ -6,13 +6,13 @@ export const SERVER_ERROR_MESSAGE = 'Something went wrong';
 
 export const HALF_OF_USERS = 50;
 
-export const ERROR_OF_FETCH = 'Fetching failed';
+export const FETCH_ERROR = 'Fetching failed';
 
-export const ERROR_OF_SAVE = 'Saving failed';
+export const SAVE_ERROR = 'Saving failed';
 
-export const ERROR_OF_DELETE = 'Delete failed';
+export const DELETE_ERROR = 'Delete failed';
 
-export const ERROR_OF_UPDATE = 'Update failed';
+export const UPDATE_ERROR = 'Update failed';
 
 export const userRoles = {
   player: 'player',

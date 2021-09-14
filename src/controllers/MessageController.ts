@@ -2,7 +2,7 @@ import { Request, Response, NextFunction, Router } from 'express';
 import { Controller } from '../interfaces';
 import { Message } from '../models';
 import { emitMessage } from '../socket';
-import { ERROR_OF_FETCH, ERROR_OF_SAVE } from '../constants';
+import { FETCH_ERROR, SAVE_ERROR } from '../constants';
 
 class MessageController implements Controller {
   public path = '/messages';
@@ -24,7 +24,7 @@ class MessageController implements Controller {
       const messages = await this.message.find({ gameId }).exec();
 
       if (!messages) {
-        throw new Error(ERROR_OF_FETCH);
+        throw new Error(FETCH_ERROR);
       }
       res.send(messages);
     } catch(err) {
@@ -34,13 +34,12 @@ class MessageController implements Controller {
 
   private addMessage = async(req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log(req.body);
       const message = new this.message({ ...req.body });
       const savedMessage = await message.save();
       const { sender, gameId } = savedMessage;
-      console.log(sender)
+
       if (!savedMessage) {
-        throw new Error(ERROR_OF_SAVE);
+        throw new Error(SAVE_ERROR);
       }
       emitMessage(sender.id, gameId, savedMessage);
       res.send(savedMessage);
