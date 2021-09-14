@@ -1,4 +1,4 @@
-import { Socket } from "socket.io";
+import type { Socket } from "socket.io";
 import { Message, Issue, User } from '../interfaces';
 import { findUserById } from "../models";
 
