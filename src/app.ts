@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { createServer, Server as HttpServer } from "http";
-import { Server } from "socket.io";
+import { createServer, Server as HttpServer } from 'http';
+import { Server } from 'socket.io';
 import { json, urlencoded } from 'body-parser';
 import mongoose from 'mongoose';
 import { errorMiddleware, loggerMiddleware } from './middleware';
@@ -70,4 +70,4 @@ class App {
   }
 }
 
-export default App;
+export { App };
