@@ -38,7 +38,7 @@ class UserController implements Controller {
   private addUser = async(req: Request, res: Response, next: NextFunction) => {
     try {
       const userDate = req.body;
-      console.log(userDate);
+
       if (userDate.role === userRoles.dealer) {
         const game  = await createGame();
         userDate.gameId = game.id;
