@@ -2,6 +2,7 @@ import { Request, Response, NextFunction, Router } from 'express';
 import { Controller } from '../interfaces';
 import { User, createGame } from '../models';
 import { emitLeaveMember } from '../socket';
+import { upload } from '../multer';
 import { FETCH_ERROR, SAVE_ERROR, DELETE_ERROR, userRoles } from '../constants';
 
 class UserController implements Controller {
@@ -16,7 +17,7 @@ class UserController implements Controller {
   private initializeRoutes() {
     this.router
       .get(`${this.path}/:gameId`, this.getUsers)
-      .post(this.path, this.addUser)
+      .post(this.path, upload.single('avatar'), this.addUser)
       .delete(`${this.path}/:userId`, this.deleteUser);
   }
 
@@ -37,7 +38,7 @@ class UserController implements Controller {
   private addUser = async(req: Request, res: Response, next: NextFunction) => {
     try {
       const userDate = req.body;
-
+      console.log(userDate);
       if (userDate.role === userRoles.dealer) {
         const game  = await createGame();
         userDate.gameId = game.id;
