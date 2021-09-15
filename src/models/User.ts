@@ -12,7 +12,7 @@ const UserSchema = new mongoose.Schema({
   joPosition: {
     type: String,
   },
-  image: {
+  avatar: {
     type: String,
   },
   role: {

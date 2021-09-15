@@ -7,7 +7,7 @@ export interface User extends Document {
   lastName?: string;
   jobPosition?: string;
   role: string;
-  image?: string;
+  avatar?: string;
   gameId: string;
 }
 
