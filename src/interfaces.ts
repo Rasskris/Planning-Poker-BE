@@ -14,6 +14,7 @@ export interface User extends Document {
 export interface Game extends Document {
   _id: string;
   creatorId?: string;
+  isStarted?: boolean;
 }
 
 export interface Issue extends Document {
@@ -35,4 +36,11 @@ export interface Message extends Document {
 export interface Controller {
   path: string;
   router: Router;
+}
+
+export interface Vote {
+  gameId: string;
+  countUsers: number;
+  countVotesFor: number;
+  victimId: string;
 }

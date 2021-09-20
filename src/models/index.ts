@@ -1,4 +1,5 @@
 export { Issue, deleteIssueByGameId, deleteIssuesByGameId } from './Issue';
-export { Game, createGame } from './Game';
+export { Game, createGame, checkStartedGame } from './Game';
 export { Message, deleteMessagesByGameId } from './Message';
-export { User, deleteUsersByGameId, findUserById } from './User';
+export { User, deleteUsersByGameId, findUserById, deleteUserById, findUsersByGameId } from './User';
+export { Vote } from './Vote';

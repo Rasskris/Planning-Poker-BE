@@ -33,6 +33,14 @@ const deleteUsersByGameId = (gameId: string) => {
 
 const findUserById = (userId: string) => {
   return User.findById(userId).exec();
-}
+};
 
-export { User, deleteUsersByGameId, findUserById };
+const findUsersByGameId = (gameId: string) => {
+  return User.find({ gameId }).exec();
+};
+
+const deleteUserById = (id: string) => {
+  return User.findOneAndDelete({ id });
+};
+
+export { User, deleteUsersByGameId, findUserById, deleteUserById, findUsersByGameId };

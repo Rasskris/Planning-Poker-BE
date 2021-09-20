@@ -56,7 +56,7 @@ class UserController implements Controller {
     }
   };
 
-  //TODO implement the vote of to kick user
+
   private deleteUser = async(req: Request, res: Response, next: NextFunction) => {
     try {
       const { userId } = req.params;
@@ -67,7 +67,7 @@ class UserController implements Controller {
       }
 
       emitLeaveMember(deletedUser);
-      res.send(deletedUser);
+      res.send({ success: true });
     } catch (err) {
       next(err);
     }

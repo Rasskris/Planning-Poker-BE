@@ -14,6 +14,8 @@ export const DELETE_ERROR = 'Delete failed';
 
 export const UPDATE_ERROR = 'Update failed';
 
+export const ONE_VOTE = 1;
+
 export const userRoles = {
   player: 'player',
   dealer: 'dealer',

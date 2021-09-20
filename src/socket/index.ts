@@ -60,3 +60,7 @@ export const emitIssueEdit = (userId: string, issue: Issue) => {
 export const emitIssueRemove = (userId: string, gameId: string, issueId: string) => {
   sockets[userId].to(gameId).emit('issueDelete', { issueId });
 };
+
+export const emitVote = (userId: string, gameId: string, user: User) => {
+  sockets[userId].to(gameId).emit('vote', user);
+};
