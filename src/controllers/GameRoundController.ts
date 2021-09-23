@@ -18,7 +18,6 @@ class GameRoundController implements Controller {
         this.router
           .get(`${this.path}/:gameId`, this.getDataAllRoomsOfGame)
           .post(`${this.path}/:gameId`, this.addGameRoundData)
-        //   .put(`${this.path}/adminUpdate/:gameId`, this.updateGameRoundAdmin)
           .put(`${this.path}/usersUpdate/:gameId`, this.updateGameRoundUsers)
 
       }
@@ -84,25 +83,6 @@ class GameRoundController implements Controller {
             next(err);
         }
     }
-
-
-    // private updateGameRoundAdmin = async(req: Request, res: Response, next: NextFunction) => {
-    //     try {
-    //         const { gameId } = req.params;
-    //         const gameRoundData = req.body;
-    //         const { currentIssue } = gameRoundData;
-    //         const updateGameRoundData = await this.gameRound.updateOne({ gameId, currentIssue }, { ...gameRoundData }).exec();
-
-    //         if(!updateGameRoundData) {
-    //             throw new Error(FETCH_ERROR);
-    //         }
-
-    //         res.send(updateGameRoundData);
-    //     } catch (err) {
-    //         next(err);
-    //     }
-    // }
-
 
 }
 
