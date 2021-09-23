@@ -10,22 +10,18 @@ export const onConnection = (socket: Socket) => {
 
   socket.on('joinToRoom', async ( gameId ) =>  {
     const user = await findUserById(userId);
-    console.log('find')
     if (user) {
-      console.log(gameId);
       joinToRoom(socket, gameId);
       emitJoinMember(user);
     }
   });
 
   socket.on('disconnect', (reason) => {
-    console.log(`${socket.id} disconnected by: ${reason}`);
     delete sockets[userId];
   });
 };
 
 export const joinToRoom = (socket: Socket, gameId: string) => {
-  console.log(socket.rooms)
   socket.join(gameId);
 };
 

@@ -25,7 +25,6 @@ class GameController implements Controller {
       const { id } = req.params;
       const games = await this.game.find({}).exec();
       const isExistGame = checkExistGame(games, id);
-      console.log(isExistGame);
       res.send({ isExistGame });
     } catch(err) {
       next(err);

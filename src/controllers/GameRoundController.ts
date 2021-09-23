@@ -27,14 +27,12 @@ class GameRoundController implements Controller {
         try {
             const { gameId } = req.params;
             const {gameRoundData, currentIssue, playerCards, userId } = req.body;
-            console.log(playerCards)
             // формирование объекта с ключами (игрок:карта) из массива игроков
             // необходимо в т.ч. для обнуления значений карт в случае рестарта раунда
             const objPlayerCards = {} as IObjectType;
                playerCards.forEach((playerCard: string) => {
                 objPlayerCards[playerCard] = null;
             });
-            console.log(objPlayerCards)
             // удаляет старые данные о таких же раундах текущей игры, если они были (в случае рестарта раунда)
             await this.gameRound.findOneAndDelete({ gameId, currentIssue }).exec();
             // создаём коллекцию в базе данных нового раунда
