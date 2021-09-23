@@ -1,5 +1,5 @@
 import type { Socket } from "socket.io";
-import { Message, Issue, User } from '../interfaces';
+import { Message, Issue, User, GameSettings, IGameRound } from '../interfaces';
 import { findUserById } from "../models";
 
 const sockets: any = {};
@@ -8,10 +8,11 @@ export const onConnection = (socket: Socket) => {
   const { userId } = socket.handshake.auth;
   sockets[userId] = socket;
 
-  socket.on('joinToRoom', async ({ gameId }) =>  {
+  socket.on('joinToRoom', async ( gameId ) =>  {
     const user = await findUserById(userId);
-
+    console.log('find')
     if (user) {
+      console.log(gameId);
       joinToRoom(socket, gameId);
       emitJoinMember(user);
     }
@@ -24,6 +25,7 @@ export const onConnection = (socket: Socket) => {
 };
 
 export const joinToRoom = (socket: Socket, gameId: string) => {
+  console.log(socket.rooms)
   socket.join(gameId);
 };
 
@@ -64,3 +66,15 @@ export const emitIssueRemove = (userId: string, gameId: string, issueId: string)
 export const emitVote = (userId: string, gameId: string, user: User) => {
   sockets[userId].to(gameId).emit('vote', user);
 };
+
+export const emitGameSettings = ( userId: string, gameId: string, gameSettings: GameSettings ) => {
+    sockets[userId].to(gameId).emit('gameSettings', gameSettings)
+}
+
+export const emitStartGameRound = (userId: string, gameId: string, gameRoundData: IGameRound) => {
+  sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
+}
+
+export const emitUpdateGameRoundData = (userId: string, gameId: string, gameRoundData: IGameRound) => {
+  sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
+}
