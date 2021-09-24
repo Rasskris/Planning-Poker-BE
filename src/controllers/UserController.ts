@@ -18,7 +18,7 @@ class UserController implements Controller {
     this.router
       .get(`${this.path}/:gameId`, this.getUsers)
       .post(this.path, upload.single('avatar'), this.addUser)
-      .delete(`${this.path}/:userId`, this.deleteUser);
+      .delete(`${this.path}`, this.deleteUser);
   }
 
   private getUsers = async(req: Request, res: Response, next: NextFunction) => {
@@ -59,15 +59,16 @@ class UserController implements Controller {
 
   private deleteUser = async(req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId } = req.params;
-      const deletedUser = await this.user.findOneAndDelete({ id: userId });
+      const { currentUserId, victimId } = req.body;
+
+      const deletedUser = await this.user.findOneAndDelete({ _id: victimId });
 
       if (!deletedUser) {
         throw new Error(DELETE_ERROR);
       }
 
-      emitLeaveMember(deletedUser);
-      res.send({ success: true });
+      emitLeaveMember(currentUserId, deletedUser);
+      res.send(deletedUser);
     } catch (err) {
       next(err);
     }

@@ -14,6 +14,14 @@ export const DELETE_ERROR = 'Delete failed';
 
 export const UPDATE_ERROR = 'Update failed';
 
+export const SUCCESS_TRUE = {
+  success: true,
+}
+
+export const SUCCESS_FALSE = {
+  success: false,
+}
+
 export const ONE_VOTE = 1;
 
 export const userRoles = {

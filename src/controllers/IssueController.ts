@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import { Controller } from '../interfaces';
 import { Issue } from '../models';
-import { emitIssueEdit } from '../socket';
+import { emitIssueAdd, emitIssueUpdate, emitIssueDelete } from '../socket';
 import { FETCH_ERROR, SAVE_ERROR, UPDATE_ERROR, DELETE_ERROR } from '../constants';
 
 class IssueController implements Controller {
@@ -44,7 +44,7 @@ class IssueController implements Controller {
         throw new Error(SAVE_ERROR);
       }
 
-      emitIssueEdit(savedIssue.creatorId, savedIssue);
+      emitIssueAdd(savedIssue);
       res.send(savedIssue);
     } catch (err) {
       next(err);
@@ -60,7 +60,7 @@ class IssueController implements Controller {
         throw new Error(UPDATE_ERROR);
       }
 
-      emitIssueEdit(updatedIssue.creatorId, updatedIssue);
+      emitIssueUpdate(updatedIssue);
       res.send(updatedIssue);
     } catch (err) {
       next(err);
@@ -76,7 +76,7 @@ class IssueController implements Controller {
         throw new Error(DELETE_ERROR);
       }
 
-      emitIssueEdit(deletedIssue.creatorId, deletedIssue);
+      emitIssueDelete(deletedIssue);
       res.send(deletedIssue);
     } catch (err) {
       next(err);

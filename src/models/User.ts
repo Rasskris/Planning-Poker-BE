@@ -23,6 +23,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  selectedCard: {
+    type: String,
+  }
 });
 
 const User  = mongoose.model<User>('User', UserSchema);
@@ -40,7 +43,7 @@ const findUsersByGameId = (gameId: string) => {
 };
 
 const deleteUserById = (id: string) => {
-  return User.findOneAndDelete({ id });
+  return User.findOneAndDelete({ _id: id });
 };
 
 export { User, deleteUsersByGameId, findUserById, deleteUserById, findUsersByGameId };
