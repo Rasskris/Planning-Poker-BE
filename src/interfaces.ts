@@ -3,12 +3,13 @@ import { Document } from 'mongoose';
 
 export interface User extends Document {
   _id: string;
+  gameId: string;
   firstName: string;
   lastName?: string;
   jobPosition?: string;
   role: string;
   avatar?: string;
-  gameId: string;
+  selectedCard?: string;
 }
 
 export interface Game extends Document {
@@ -19,18 +20,18 @@ export interface Game extends Document {
 
 export interface Issue extends Document {
   _id: string;
+  gameId: string;
   title: string;
   priority: string;
   creatorId: string;
-  gameId: string;
   done?: boolean;
 }
 
 export interface Message extends Document {
   _id: string;
+  gameId: string;
   text: string;
   sender: User;
-  gameId: string;
 }
 
 export interface Controller {
