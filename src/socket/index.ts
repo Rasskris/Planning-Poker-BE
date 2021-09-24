@@ -8,7 +8,7 @@ export const onConnection = (socket: Socket) => {
   const { userId } = socket.handshake.auth;
   sockets[userId] = socket;
 
-  socket.on('joinToRoom', async ({ gameId }) =>  {
+  socket.on('joinToRoom', async (gameId) =>  {
     const user = await findUserById(userId);
 
     if (user) {
@@ -31,36 +31,47 @@ export const leaveRoom = (socket: Socket, gameId: string) => {
   socket.leave(gameId);
 };
 
-export const emitJoinMember = (newUser: User) => {
-  const {id, gameId } = newUser;
+export const emitJoinMember = (user: User) => {
+  const {id, gameId } = user;
 
-  sockets[id].to(gameId).emit('membersEdit', newUser);
+  sockets[id].to(gameId).emit('memberJoin', user);
 };
 
-export const emitLeaveMember = (deletedUser: User) => {
-  const {id, gameId } = deletedUser;
+export const emitLeaveMember = (currentUserId: string, deletedUser: User) => {
+  const {id: deletedUserId, gameId, firstName } = deletedUser;
 
-  leaveRoom(sockets[id], gameId);
-  sockets[id].to(gameId).emit('membersEdit', deletedUser);
+  sockets[currentUserId].to(gameId).emit('memberLeave', deletedUserId);
+  leaveRoom(sockets[deletedUserId], gameId);
 };
-
 
 export const emitMessage = (userId: string, gameId: string, message: Message) => {
-  sockets[userId].to(gameId).emit('message', { message });
+  sockets[userId].to(gameId).emit('message', message);
 };
 
-export const emitIssue = (userId: string, gameId: string, issue: Issue) => {
-  sockets[userId].to(gameId).emit('issue', { issue });
+export const emitIssueAdd = (issue: Issue) => {
+  const { creatorId, gameId } = issue;
+
+  sockets[creatorId].to(gameId).emit('issueAdd', issue);
 };
 
-export const emitIssueEdit = (userId: string, issue: Issue) => {
-  sockets[userId].to(issue.gameId).emit('issueEdit', issue);
+export const emitIssueUpdate = (issue: Issue) => {
+  const { creatorId, gameId } = issue;
+
+  sockets[creatorId].to(gameId).emit('issueUpdate', issue);
 };
 
-export const emitIssueRemove = (userId: string, gameId: string, issueId: string) => {
-  sockets[userId].to(gameId).emit('issueDelete', { issueId });
+export const emitIssueDelete = (issue: Issue) => {
+  const { id, creatorId, gameId } = issue;
+
+  sockets[creatorId].to(gameId).emit('issueDelete', id);
 };
 
-export const emitVote = (userId: string, gameId: string, user: User) => {
-  sockets[userId].to(gameId).emit('vote', user);
+export const emitVote = async (currentUserId: string, gameId: string, victimId: string) => {
+  const victim = await findUserById(victimId);
+
+  sockets[currentUserId].to(gameId).emit('vote', { victim, currentUserId });
+};
+
+export const emitGameStatus = (userId: string, gameId: string, status: boolean) => {
+  sockets[userId].to(gameId).emit('gameStatus', status);
 };
