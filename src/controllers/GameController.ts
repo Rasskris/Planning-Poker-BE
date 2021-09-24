@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import { Controller } from '../interfaces';
 import { checkStartedGame, Game } from '../models';
-import { DELETE_ERROR } from '../constants';
+import { DELETE_ERROR, UPDATE_ERROR } from '../constants';
 import { checkExistGame } from '../utils';
+import { emitGameStatus } from '../socket';
 import { deleteUsersByGameId, deleteIssuesByGameId, deleteMessagesByGameId } from '../models';
 
 class GameController implements Controller {
@@ -17,6 +18,7 @@ class GameController implements Controller {
   private initializeRoutes() {
     this.router
       .get(`${this.path}/:id`, this.getGame)
+      .put(this.path, this.updateGameStatus)
       .delete(`${this.path}/:id`, this.deleteGame);
   }
 
@@ -25,9 +27,25 @@ class GameController implements Controller {
       const { id } = req.params;
       const games = await this.game.find({}).exec();
       const isExistGame = checkExistGame(games, id);
-      console.log(isExistGame);
+
       res.send({ isExistGame });
     } catch(err) {
+      next(err);
+    }
+  }
+
+  private updateGameStatus = async(req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { gameId, userId, isStarted } = req.body;
+      const updatedGame = await this.game.findOneAndUpdate({ _id: gameId }, isStarted, { new: true });
+
+      if (!updatedGame) {
+        throw new Error(UPDATE_ERROR);
+      }
+
+      emitGameStatus(gameId, userId, isStarted );
+      res.send({ status: isStarted });
+    } catch (err) {
       next(err);
     }
   }
