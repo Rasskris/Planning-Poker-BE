@@ -1,5 +1,5 @@
 import type { Socket } from "socket.io";
-import { Message, Issue, User } from '../interfaces';
+import { Message, Issue, User, GameSettings, IGameRound } from '../interfaces';
 import { findUserById } from "../models";
 
 const sockets: any = {};
@@ -10,7 +10,6 @@ export const onConnection = (socket: Socket) => {
 
   socket.on('joinToRoom', async (gameId) =>  {
     const user = await findUserById(userId);
-
     if (user) {
       joinToRoom(socket, gameId);
       emitJoinMember(user);
@@ -18,7 +17,6 @@ export const onConnection = (socket: Socket) => {
   });
 
   socket.on('disconnect', (reason) => {
-    console.log(`${socket.id} disconnected by: ${reason}`);
     delete sockets[userId];
   });
 };
@@ -75,3 +73,15 @@ export const emitVote = async (currentUserId: string, gameId: string, victimId: 
 export const emitGameStatus = (userId: string, gameId: string, status: boolean) => {
   sockets[userId].to(gameId).emit('gameStatus', status);
 };
+
+export const emitGameSettings = ( userId: string, gameId: string, gameSettings: GameSettings ) => {
+    sockets[userId].to(gameId).emit('gameSettings', gameSettings)
+}
+
+export const emitStartGameRound = (userId: string, gameId: string, gameRoundData: IGameRound) => {
+  sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
+}
+
+export const emitUpdateGameRoundData = (userId: string, gameId: string, gameRoundData: IGameRound) => {
+  sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
+}

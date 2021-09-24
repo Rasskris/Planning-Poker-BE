@@ -7,7 +7,7 @@ import { json, urlencoded } from 'body-parser';
 import mongoose from 'mongoose';
 import { errorMiddleware, loggerMiddleware } from './middleware';
 import { onConnection } from './socket';
-import { UserController, GameController, MessageController, IssueController, VoteController } from './controllers';
+import { UserController, GameController, MessageController, IssueController, VoteController, GameSettingsController, GameRoundController } from './controllers';
 
 class App {
   public app: express.Application;
@@ -59,6 +59,8 @@ class App {
       new MessageController(),
       new IssueController(),
       new VoteController(),
+      new GameSettingsController(),
+      new GameRoundController(),
     ];
 
     controllers.forEach((controller) => {

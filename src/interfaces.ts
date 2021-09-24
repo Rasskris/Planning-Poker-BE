@@ -45,3 +45,32 @@ export interface Vote {
   countVotesFor: number;
   victimId: string;
 }
+
+export interface GameSettings extends Document {
+  _id: string;
+  scramMasterAsPlayerSetting: boolean;
+  changingCardInRoundEndSetting: boolean;
+  isTimerNeededSetting: boolean;
+  changeSelectionAfterFlippingCardsSetting: boolean;
+  automaticFlipCardsSetting: boolean;
+  scoreTypeSetting: string; //ITypesScoreCards
+  scoreTypeShortSetting: string;
+  timerValuesSetting: {
+    minutes: number;
+    seconds: number;
+  };
+}
+
+export interface IObjectType {
+  [index: string]: string | null;
+}
+
+export interface IGameRound extends Document {
+  _id: string;
+  timerIsStarted: boolean;
+  currentIssue: string;
+  playerCards: IObjectType;
+  gameId: string;
+  roundStatistics: IObjectType;
+  isActive: Boolean;
+}
