@@ -42,6 +42,12 @@ export const emitLeaveMember = (currentUserId: string, deletedUser: User) => {
   leaveRoom(sockets[deletedUserId], gameId);
 };
 
+export const emitUserUpdate = (updatedUser: User) => {
+const { id: userId, gameId } = updatedUser;
+
+sockets[userId].to(gameId).emit('userUpdate', updatedUser);
+};
+
 export const emitMessage = (userId: string, gameId: string, message: Message) => {
   sockets[userId].to(gameId).emit('message', message);
 };
@@ -52,10 +58,8 @@ export const emitIssueAdd = (issue: Issue) => {
   sockets[creatorId].to(gameId).emit('issueAdd', issue);
 };
 
-export const emitIssueUpdate = (issue: Issue) => {
-  const { creatorId, gameId } = issue;
-
-  sockets[creatorId].to(gameId).emit('issueUpdate', issue);
+export const emitIssueUpdate = (gameId: string, creatorId: string, issues: Issue[]) => {
+  sockets[creatorId].to(gameId).emit('issueUpdate', issues);
 };
 
 export const emitIssueDelete = (issue: Issue) => {

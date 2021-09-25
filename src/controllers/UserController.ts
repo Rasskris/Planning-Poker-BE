@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import { Controller } from '../interfaces';
 import { User, createGame } from '../models';
-import { emitLeaveMember } from '../socket';
+import { emitLeaveMember, emitUserUpdate } from '../socket';
 import { upload } from '../multer';
-import { FETCH_ERROR, SAVE_ERROR, DELETE_ERROR, userRoles } from '../constants';
+import { FETCH_ERROR, SAVE_ERROR, DELETE_ERROR, userRoles, UPDATE_ERROR } from '../constants';
 
 class UserController implements Controller {
   public path = '/users';
@@ -18,7 +18,8 @@ class UserController implements Controller {
     this.router
       .get(`${this.path}/:gameId`, this.getUsers)
       .post(this.path, upload.single('avatar'), this.addUser)
-      .delete(`${this.path}`, this.deleteUser);
+      .put(this.path, this.updateUser)
+      .delete(this.path, this.deleteUser);
   }
 
   private getUsers = async(req: Request, res: Response, next: NextFunction) => {
@@ -56,6 +57,22 @@ class UserController implements Controller {
     }
   };
 
+  private updateUser = async(req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id, selectedCard } = req.body;
+
+      const updatedUser = await this.user.findOneAndUpdate({ _id: id }, { selectedCard }, { new: true, upsert: true }).exec();
+
+      if (!updatedUser) {
+        throw new Error(UPDATE_ERROR);
+      }
+
+      emitUserUpdate(updatedUser);
+      res.send(updatedUser);
+    } catch (err) {
+      next(err);
+    }
+  }
 
   private deleteUser = async(req: Request, res: Response, next: NextFunction) => {
     try {

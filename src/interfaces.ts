@@ -9,7 +9,10 @@ export interface User extends Document {
   jobPosition?: string;
   role: string;
   avatar?: string;
-  selectedCard?: string;
+  selectedCard?: {
+    scoreType: string;
+    scoreValue: number | 'unknown' | 'coffe';
+  };
 }
 
 export interface Game extends Document {
@@ -59,6 +62,7 @@ export interface GameSettings extends Document {
     minutes: number;
     seconds: number;
   };
+  scoreValues: Array<number | string>;
 }
 
 export interface IObjectType {
