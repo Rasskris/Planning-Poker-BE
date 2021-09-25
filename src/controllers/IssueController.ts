@@ -53,15 +53,15 @@ class IssueController implements Controller {
 
   private updateIssue = async(req: Request, res: Response, next: NextFunction) => {
     try {
-      const issue = req.body;
-      const updatedIssue = await this.issue.findByIdAndUpdate(issue.id, issue, { new: true });
+      const { id, gameId, creatorId } = req.body;
 
-      if (!updatedIssue) {
-        throw new Error(UPDATE_ERROR);
-      }
+      await this.issue.updateMany({ gameId }, { isCurrent: false });
+      await this.issue.updateOne({ _id: id }, { isCurrent: true }, { new: true });
 
-      emitIssueUpdate(updatedIssue);
-      res.send(updatedIssue);
+      const updatedIssues = await this.issue.find({ gameId }).exec();
+
+      emitIssueUpdate(gameId, creatorId, updatedIssues);
+      res.send(updatedIssues);
     } catch (err) {
       next(err);
     }

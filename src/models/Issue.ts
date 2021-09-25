@@ -22,6 +22,10 @@ const IssueSchema = new mongoose.Schema({
   done: {
     type: Boolean,
     default: false,
+  },
+  isCurrent: {
+    type: Boolean,
+    default: false,
   }
 });
 
