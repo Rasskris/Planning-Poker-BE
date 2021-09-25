@@ -30,6 +30,9 @@ const GameSettingsSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    scoreValues: {
+        type: Array,
+    }
 })
 
 const GameSettings = mongoose.model<GameSettings>('GameSettings', GameSettingsSchema);
