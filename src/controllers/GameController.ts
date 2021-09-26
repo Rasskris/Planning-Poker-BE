@@ -18,7 +18,7 @@ class GameController implements Controller {
   private initializeRoutes() {
     this.router
       .get(`${this.path}/:id`, this.getGame)
-      .put(this.path, this.updateGameStatus)
+      .put(`${this.path}/:id`, this.updateGameStatus)
       .delete(`${this.path}/:id`, this.deleteGame);
   }
 
@@ -36,14 +36,15 @@ class GameController implements Controller {
 
   private updateGameStatus = async(req: Request, res: Response, next: NextFunction) => {
     try {
-      const { gameId, userId, isStarted } = req.body;
+      const { id: gameId } = req.params;
+      const { currentUserId, isStarted } = req.body;
       const updatedGame = await this.game.findOneAndUpdate({ _id: gameId }, isStarted, { new: true });
 
       if (!updatedGame) {
         throw new Error(UPDATE_ERROR);
       }
 
-      emitGameStatus(gameId, userId, isStarted );
+      emitGameStatus(currentUserId, gameId, isStarted );
       res.send({ status: isStarted });
     } catch (err) {
       next(err);

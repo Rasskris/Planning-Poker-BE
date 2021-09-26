@@ -24,7 +24,8 @@ const UserSchema = new mongoose.Schema({
     required: true,
   },
   selectedCard: {
-    type: String,
+    scoreType: String,
+    scoreValue: String,
   }
 });
 
