@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import { Controller } from '../interfaces';
-import { checkStartedGame, Game } from '../models';
+import { Game } from '../models';
 import { DELETE_ERROR, UPDATE_ERROR } from '../constants';
 import { checkExistGame } from '../utils';
 import { emitGameStatus } from '../socket';
@@ -38,8 +38,8 @@ class GameController implements Controller {
     try {
       const { id: gameId } = req.params;
       const { currentUserId, isStarted } = req.body;
-      const updatedGame = await this.game.findOneAndUpdate({ _id: gameId }, isStarted, { new: true });
-
+      const updatedGame = await this.game.findOneAndUpdate({ _id: gameId }, { isStarted }, { new: true });
+      console.log(updatedGame);
       if (!updatedGame) {
         throw new Error(UPDATE_ERROR);
       }

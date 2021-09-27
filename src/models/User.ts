@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { userRoles } from '../constants';
 import { User } from '../interfaces';
 
 const UserSchema = new mongoose.Schema({
@@ -44,7 +45,11 @@ const findUsersByGameId = (gameId: string) => {
 };
 
 const deleteUserById = (id: string) => {
-  return User.findOneAndDelete({ _id: id });
+  return User.findOneAndDelete({ _id: id }).exec();
 };
 
-export { User, deleteUsersByGameId, findUserById, deleteUserById, findUsersByGameId };
+const findDealerByGameId = (gameId: string) => {
+  return User.findOne({ gameId, role: userRoles.dealer }).exec();
+};
+
+export { User, deleteUsersByGameId, findUserById, deleteUserById, findUsersByGameId, findDealerByGameId };

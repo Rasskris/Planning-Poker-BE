@@ -22,6 +22,22 @@ export const SUCCESS_FALSE = {
   success: false,
 }
 
+export const AUTO_ADMITED_TRUE = {
+  isAutoAdmitedToGame: true,
+};
+
+export const AUTO_ADMITED_FALSE = {
+  isAutoAdmitedToGame: false,
+};
+
+export const PENDING_DEALER_ANSWER_TRUE = {
+  isPendingDealerAnswer: true,
+};
+
+export const PENDING_DEALER_ANSWER_FALSE = {
+  isPendingDealerAnswer: false,
+};
+
 export const ONE_VOTE = 1;
 
 export const userRoles = {

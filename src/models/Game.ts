@@ -17,8 +17,8 @@ const createGame = () => {
   return new Game({ isStarted: false }).save();
 };
 
-const checkStartedGame = (id: string) => {
-  return Game.exists({ id, isStarted: true });
+const checkGameStarted = (id: string) => {
+  return Game.exists({ _id: id, isStarted: true });
 };
 
-export { Game, createGame, checkStartedGame };
+export { Game, createGame, checkGameStarted };

@@ -70,6 +70,7 @@ class App {
 
   public initializeSocketConnection() {
     this.ioServer.on('connection', onConnection);
+    this.app.set("socketio", this.ioServer);
   }
 }
 
