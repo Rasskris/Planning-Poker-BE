@@ -32,6 +32,10 @@ const GameSettingsSchema = new mongoose.Schema({
     },
     scoreValues: {
         type: Array,
+    },
+    automaticAdmitAfterStartGame: {
+        type: Boolean,
+        default: false,
     }
 })
 
@@ -42,7 +46,7 @@ const deleteGameSettingsByGameId = (gameId: string) => {
 };
 
 const findGameSettingsByGameId = (gameId: string) => {
-    return GameSettings.find({ gameId }).exec();
+    return GameSettings.findOne({ gameId }).exec();
 };
 
 export { GameSettings, deleteGameSettingsByGameId, findGameSettingsByGameId }

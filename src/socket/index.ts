@@ -12,7 +12,6 @@ export const onConnection = (socket: Socket) => {
     const user = await findUserById(userId);
     if (user) {
       joinToRoom(socket, gameId);
-      emitJoinMember(user);
     }
   });
 
@@ -77,14 +76,19 @@ export const emitVote = async (currentUserId: string, gameId: string, victimId: 
 export const emitGameStatus = (userId: string, gameId: string, status: boolean) => {
   sockets[userId].to(gameId).emit('gameStatus', status);
 };
+export const emitGameStatusNewComer = (userId: string) => {
+  const isStarted = true;
+
+  sockets[userId].emit('gameStatus', isStarted);
+};
 
 export const emitGameSettings = ( userId: string, gameId: string, gameSettings: GameSettings ) => {
     sockets[userId].to(gameId).emit('gameSettings', gameSettings)
-}
+};
 
 export const emitStartGameRound = (userId: string, gameId: string, gameRoundData: IGameRound) => {
   sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
-}
+};
 
 export const emitUpdateGameRoundData = (userId: string, gameId: string, gameRoundData: IGameRound) => {
   sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
@@ -92,8 +96,20 @@ export const emitUpdateGameRoundData = (userId: string, gameId: string, gameRoun
 
 export const emitResetGameRoundData = (userId: string, gameId: string) => {
   sockets[userId].to(gameId).emit('resetGameRoundData');
-}
+};
 
 export const emitGetRoundStatistic = (userId: string, gameId: string, roundStatistic: IObjectType) => {
   sockets[userId].to(gameId).emit('getRoundStatistic', roundStatistic);
-}
+};
+
+export const emitNotifyDealer = (dealerId: string, user: User) => {
+  sockets[dealerId].emit('notifyDealer', user);
+};
+
+export const emitAdmitToGame = (userId: string) => {
+  sockets[userId].emit('admitToGame')
+};
+
+export const emitRejectToGame = (userId: string) => {
+  sockets[userId].emit('rejectToGame');
+};

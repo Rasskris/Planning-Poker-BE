@@ -58,11 +58,13 @@ export interface GameSettings extends Document {
   automaticFlipCardsSetting: boolean;
   scoreTypeSetting: string; //ITypesScoreCards
   scoreTypeShortSetting: string;
+  gameId: string;
   timerValuesSetting: {
     minutes: number;
     seconds: number;
   };
   scoreValues: Array<number | string>;
+  automaticAdmitAfterStartGame: boolean;
 }
 
 export interface IObjectType {
