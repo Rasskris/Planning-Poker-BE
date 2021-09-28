@@ -123,14 +123,23 @@ class UserController implements Controller {
   private deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { currentUserId, victimId } = req.body;
+      const ioServer = req.app.get('socketio');
 
-      const deletedUser = await this.user.findOneAndDelete({ _id: victimId });
+      let deletedUser;
+      if (victimId) {
+        deletedUser = await this.user.findOneAndDelete({ _id: victimId }).exec();
+      } else {
+        deletedUser = await this.user.findOneAndDelete({ _id: currentUserId }).exec();
+      }
 
       if (!deletedUser) {
         throw new Error(DELETE_ERROR);
       }
 
-      emitLeaveMember(currentUserId, deletedUser);
+      victimId 
+        ? emitLeaveMember(currentUserId, deletedUser) 
+        : ioServer.to(deletedUser.gameId).emit('memberLeave', deletedUser.id);
+
       res.send(deletedUser);
     } catch (err) {
       next(err);
