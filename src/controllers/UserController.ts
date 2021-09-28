@@ -1,9 +1,18 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import { Controller } from '../interfaces';
-import { User, createGame } from '../models';
-import { emitLeaveMember, emitUserUpdate } from '../socket';
+import { User, createGame, checkGameStarted, findGameSettingsByGameId, findDealerByGameId } from '../models';
+import { emitLeaveMember, emitNotifyDealer, emitUserUpdate, emitAdmitToGame, emitRejectToGame, emitJoinMember } from '../socket';
 import { upload } from '../multer';
-import { FETCH_ERROR, SAVE_ERROR, DELETE_ERROR, userRoles, UPDATE_ERROR } from '../constants';
+import { 
+  FETCH_ERROR, 
+  SAVE_ERROR, 
+  DELETE_ERROR, 
+  userRoles, 
+  UPDATE_ERROR, 
+  AUTO_ADMITED_FALSE, 
+  AUTO_ADMITED_TRUE, 
+  PENDING_DEALER_ANSWER_TRUE, 
+  PENDING_DEALER_ANSWER_FALSE } from '../constants';
 
 class UserController implements Controller {
   public path = '/users';
@@ -17,6 +26,8 @@ class UserController implements Controller {
   private initializeRoutes() {
     this.router
       .get(`${this.path}/:gameId`, this.getUsers)
+      .get(`${this.path}/admit/:id`, this.admitUser)
+      .get(`${this.path}/reject/:id`, this.rejectUser)
       .post(this.path, upload.single('avatar'), this.addUser)
       .put(this.path, this.updateUser)
       .delete(this.path, this.deleteUser);
@@ -36,28 +47,63 @@ class UserController implements Controller {
     }
   };
 
-  private addUser = async(req: Request, res: Response, next: NextFunction) => {
+  // TODO refactor
+  private addUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userDate = req.body;
+      const userData = req.body;
 
-      if (userDate.role === userRoles.dealer) {
+      if (userData.role === userRoles.dealer) {
         const game  = await createGame();
-        userDate.gameId = game.id;
-      }
-      const user = new this.user({ ...userDate });
-      const savedUser = await user.save();
+        userData.gameId = game.id;
+        const user = new this.user({ ...userData });
+        const savedUser = await user.save();
+      
+        if (!savedUser) {
+          throw new Error(SAVE_ERROR);
+        }
 
+        res.send({ user: savedUser, ...PENDING_DEALER_ANSWER_FALSE, ...AUTO_ADMITED_FALSE });
+        return;
+      }
+      const user = new this.user({ ...userData });
+      const savedUser = await user.save();
+      
       if (!savedUser) {
         throw new Error(SAVE_ERROR);
       }
+      const { gameId } = savedUser;
 
-      res.send(savedUser);
+      const isGameStarted = await checkGameStarted(gameId);
+      const currentGameSettings = await findGameSettingsByGameId(gameId);
+      const isAutomaticAdmitAfterStartGame = currentGameSettings?.automaticAdmitAfterStartGame;
+
+      const ioServer = req.app.get('socketio');
+
+      if (isGameStarted && !isAutomaticAdmitAfterStartGame) {
+        const dealer = await findDealerByGameId(gameId);
+        if (!dealer) {
+          throw new Error(SAVE_ERROR);
+        }
+        emitNotifyDealer(dealer.id, savedUser);
+
+        res.send({ user: savedUser, ...PENDING_DEALER_ANSWER_TRUE, ...AUTO_ADMITED_FALSE });
+        return;
+      } else if (isGameStarted && isAutomaticAdmitAfterStartGame) {
+        res.send({ user: savedUser, ...PENDING_DEALER_ANSWER_FALSE, ...AUTO_ADMITED_TRUE });
+
+        ioServer.to(gameId).emit('memberJoin', savedUser);
+        return;
+      }
+
+      res.send({ user: savedUser, ...PENDING_DEALER_ANSWER_FALSE, ...AUTO_ADMITED_FALSE });
+
+      ioServer.to(gameId).emit('memberJoin', savedUser);
     } catch (err) {
       next(err);
     }
   };
 
-  private updateUser = async(req: Request, res: Response, next: NextFunction) => {
+  private updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id, selectedCard } = req.body;
 
@@ -72,9 +118,9 @@ class UserController implements Controller {
     } catch (err) {
       next(err);
     }
-  }
+  };
 
-  private deleteUser = async(req: Request, res: Response, next: NextFunction) => {
+  private deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { currentUserId, victimId } = req.body;
 
@@ -89,7 +135,36 @@ class UserController implements Controller {
     } catch (err) {
       next(err);
     }
-  }
+  };
+
+  private admitUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const user = await this.user.findOne({ _id: id }).exec();
+
+      if (user) {
+        emitAdmitToGame(id);
+      
+        emitJoinMember(user);
+  
+        res.send({ id });
+      }
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  private rejectUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+
+      emitRejectToGame(id);
+
+      res.send({ id });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 export { UserController };
