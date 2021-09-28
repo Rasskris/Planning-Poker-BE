@@ -39,7 +39,7 @@ class GameController implements Controller {
       const { id: gameId } = req.params;
       const { currentUserId, isStarted } = req.body;
       const updatedGame = await this.game.findOneAndUpdate({ _id: gameId }, { isStarted }, { new: true });
-      console.log(updatedGame);
+
       if (!updatedGame) {
         throw new Error(UPDATE_ERROR);
       }
