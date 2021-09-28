@@ -24,7 +24,7 @@ const GameSettingsSchema = new mongoose.Schema({
         type: String,
     },
     timerValuesSetting: {
-        type: Object, // ??
+        type: Object,
     },
     gameId: {
         type: String,
@@ -50,4 +50,3 @@ const findGameSettingsByGameId = (gameId: string) => {
 };
 
 export { GameSettings, deleteGameSettingsByGameId, findGameSettingsByGameId }
-

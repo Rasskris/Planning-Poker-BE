@@ -73,7 +73,7 @@ export interface IObjectType {
 
 export interface IGameRound extends Document {
   _id: string;
-  timerIsStarted: boolean;
+  roundIsStarted: boolean;
   currentIssue: string;
   playerCards: IObjectType;
   gameId: string;
