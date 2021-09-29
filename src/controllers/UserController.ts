@@ -124,13 +124,8 @@ class UserController implements Controller {
     try {
       const { currentUserId, victimId } = req.body;
       const ioServer = req.app.get('socketio');
-
-      let deletedUser;
-      if (victimId) {
-        deletedUser = await this.user.findOneAndDelete({ _id: victimId }).exec();
-      } else {
-        deletedUser = await this.user.findOneAndDelete({ _id: currentUserId }).exec();
-      }
+    
+      const deletedUser = await this.user.findOneAndDelete({ _id: victimId || currentUserId }).exec();
 
       if (!deletedUser) {
         throw new Error(DELETE_ERROR);
