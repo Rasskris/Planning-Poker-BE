@@ -38,7 +38,7 @@ class GameController implements Controller {
     try {
       const { id: gameId } = req.params;
       const { currentUserId, isStarted } = req.body;
-      const updatedGame = await this.game.findOneAndUpdate({ _id: gameId }, { isStarted }, { new: true });
+      const updatedGame = await this.game.findOneAndUpdate({ _id: gameId }, { isStarted }, { new: true }).exec();
 
       if (!updatedGame) {
         throw new Error(UPDATE_ERROR);
@@ -53,16 +53,18 @@ class GameController implements Controller {
 
   private deleteGame = async(req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
-      const deletedGame = await this.game.findByIdAndDelete(id);
+      const { id: gameId } = req.params;
+      const deletedGame = await this.game.findByIdAndDelete(gameId).exec();
+      const ioServer = req.app.get('socketio');
 
       if (!deletedGame) {
         throw new Error(DELETE_ERROR);
       }
-      await deleteUsersByGameId(id);
-      await deleteMessagesByGameId(id);
-      await deleteIssuesByGameId(id);
+      await deleteUsersByGameId(gameId);
+      await deleteMessagesByGameId(gameId);
+      await deleteIssuesByGameId(gameId);
 
+      ioServer.to(gameId).emit('cancelGame');
       res.send(deletedGame);
     } catch (err) {
       next(err);
