@@ -1,5 +1,5 @@
 import type { Socket } from "socket.io";
-import { Message, Issue, User, GameSettings, IGameRound } from '../interfaces';
+import { Message, Issue, User, GameSettings, IGameRound, IObjectType } from '../interfaces';
 import { findUserById } from "../models";
 
 const sockets: any = {};
@@ -92,6 +92,14 @@ export const emitStartGameRound = (userId: string, gameId: string, gameRoundData
 
 export const emitUpdateGameRoundData = (userId: string, gameId: string, gameRoundData: IGameRound) => {
   sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
+}
+
+export const emitResetGameRoundData = (userId: string, gameId: string) => {
+  sockets[userId].to(gameId).emit('resetGameRoundData');
+};
+
+export const emitGetRoundStatistic = (userId: string, gameId: string, roundStatistic: IObjectType) => {
+  sockets[userId].to(gameId).emit('getRoundStatistic', roundStatistic);
 };
 
 export const emitNotifyDealer = (dealerId: string, user: User) => {

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { IGameRound } from '../interfaces';
 
 const GameRoundSchema = new mongoose.Schema({
-    timerIsStarted: {
+    roundIsStarted: {
         type: Boolean,
     },
     currentIssue: {
