@@ -4,4 +4,4 @@ export { IssueController } from './IssueController';
 export { MessageController } from './MessageController';
 export { VoteController } from './VoteContrroller';
 export { GameSettingsController } from './GameSettingsController';
-export { GameRoundController } from './GameRoundController';
+export { RoundController } from './RoundController';
