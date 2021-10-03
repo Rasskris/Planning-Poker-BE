@@ -18,6 +18,7 @@ class IssueController implements Controller {
       .get(`${this.path}/:gameId`, this.getIssues)
       .post(this.path, this.addIssue)
       .put(this.path, this.updateIssue)
+      .put(`${this.path}/status`, this.updateIssueStatus)
       .delete(`${this.path}/:issueId`, this.deleteIssue);
   }
 
@@ -82,6 +83,22 @@ class IssueController implements Controller {
       next(err);
     }
   }
+
+  private updateIssueStatus = async(req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id, gameId, creatorId } = req.body;
+  
+      await this.issue.updateOne({ _id: id }, { done: true });
+  
+      const updatedIssues = await this.issue.find({ gameId }).exec();
+  
+      emitIssueUpdate(gameId, creatorId, updatedIssues);
+      res.send(updatedIssues);
+    } catch (err) {
+      next(err);
+    }
+  };
 }
+
 
 export { IssueController };
