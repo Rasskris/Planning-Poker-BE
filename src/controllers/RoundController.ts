@@ -2,7 +2,8 @@ import { Request, Response, NextFunction, Router } from 'express';
 import { Controller, Timer } from '../interfaces';
 import { FETCH_ERROR, UPDATE_ERROR, ROUND_STATUS } from '../constants';
 import { findGameSettingsByGameId, resetSelectedCard, Round  } from '../models';
-import { emitResetSelectedCard, emitUpdateRound, SocketTimer } from '../socket';
+import { emitResetSelectedCard, emitUpdateRound } from '../socket';
+import { SocketTimer } from '../utils';
 
 type Timers = {
   [key: string]: SocketTimer;
