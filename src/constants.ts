@@ -38,7 +38,7 @@ export const PENDING_DEALER_ANSWER_FALSE = {
   isPendingDealerAnswer: false,
 };
 
-export const SCORE_TYPE_FN = 'fibonacci-numbers';
+export const SCORE_TYPE_FN = 'fibonacciNumbers';
 
 export const SCORE_TYPE_SHORT_FN = 'FN';
 
