@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import { Controller } from '../interfaces';
-import { User, createGame, checkGameStarted, findGameSettingsByGameId, findDealerByGameId } from '../models';
-import { emitLeaveMember, emitNotifyDealer, emitUserUpdate, emitAdmitToGame, emitRejectToGame, emitJoinMember } from '../socket';
+import { User, createGame, checkGameStarted, findGameSettingsByGameId, findDealerByGameId, createGameSettings, createRound } from '../models';
+import { emitLeaveMember, emitNotifyDealer, emitUserUpdate, emitAdmitToGame, emitRejectToGame, emitJoinMember, emitGameSettingsNewComer } from '../socket';
 import { upload } from '../multer';
 import { 
   FETCH_ERROR, 
@@ -26,9 +26,9 @@ class UserController implements Controller {
   private initializeRoutes() {
     this.router
       .get(`${this.path}/:gameId`, this.getUsers)
-      .get(`${this.path}/admit/:id`, this.admitUser)
-      .get(`${this.path}/reject/:id`, this.rejectUser)
       .post(this.path, upload.single('avatar'), this.addUser)
+      .put(`${this.path}/admit/:id`, this.admitUser)
+      .put(`${this.path}/reject/:id`, this.rejectUser)
       .put(this.path, this.updateUser)
       .delete(this.path, this.deleteUser);
   }
@@ -53,11 +53,14 @@ class UserController implements Controller {
       const userData = req.body;
 
       if (userData.role === userRoles.dealer) {
-        const game  = await createGame();
-        userData.gameId = game.id;
+        const { id: gameId } = await createGame();
+        userData.gameId = gameId;
         const user = new this.user({ ...userData });
         const savedUser = await user.save();
-      
+
+        await createGameSettings(gameId);
+        await createRound(gameId);
+
         if (!savedUser) {
           throw new Error(SAVE_ERROR);
         }
@@ -76,7 +79,6 @@ class UserController implements Controller {
       const isGameStarted = await checkGameStarted(gameId);
       const currentGameSettings = await findGameSettingsByGameId(gameId);
       const isAutomaticAdmitAfterStartGame = currentGameSettings?.automaticAdmitAfterStartGame;
-
       const ioServer = req.app.get('socketio');
 
       if (isGameStarted && !isAutomaticAdmitAfterStartGame) {
@@ -144,13 +146,17 @@ class UserController implements Controller {
   private admitUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
+      const { gameId } = req.body;
       const user = await this.user.findOne({ _id: id }).exec();
+      const gameSettings = await findGameSettingsByGameId(gameId);
 
-      if (user) {
+      if (user && gameSettings) {
         emitAdmitToGame(id);
       
         emitJoinMember(user);
-  
+        
+        emitGameSettingsNewComer(id, gameSettings);
+
         res.send({ id });
       }
     } catch (err) {

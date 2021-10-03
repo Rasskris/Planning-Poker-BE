@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { userRoles } from '../constants';
+import { userRoles, VALUE_UNKNOWN } from '../constants';
 import { User } from '../interfaces';
 
 const UserSchema = new mongoose.Schema({
@@ -52,4 +52,21 @@ const findDealerByGameId = (gameId: string) => {
   return User.findOne({ gameId, role: userRoles.dealer }).exec();
 };
 
-export { User, deleteUsersByGameId, findUserById, deleteUserById, findUsersByGameId, findDealerByGameId };
+const resetSelectedCard = (gameId: string, scoreType: string) => {
+  const selectedCard = {
+    scoreType,
+    scoreValue: VALUE_UNKNOWN,
+  };
+
+  return User.updateMany({ gameId }, { selectedCard }).exec();
+};
+
+export { 
+  User, 
+  deleteUsersByGameId, 
+  findUserById, 
+  deleteUserById, 
+  findUsersByGameId, 
+  findDealerByGameId,
+  resetSelectedCard,
+};
