@@ -19,6 +19,9 @@ const GameRoundSchema = new mongoose.Schema({
     },
     isActive: {
         type: Boolean,
+    },
+    scoreTypeValue: {
+        type: String,
     }
 })
 
