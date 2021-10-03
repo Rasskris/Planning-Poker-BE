@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { Document } from 'mongoose';
+import type { Server } from 'socket.io';
+import { ROUND_STATUS } from './constants';
 
 export interface User extends Document {
   _id: string;
@@ -11,7 +13,7 @@ export interface User extends Document {
   avatar?: string;
   selectedCard?: {
     scoreType: string;
-    scoreValue: number | 'unknown' | 'coffe';
+    scoreValue: string;
   };
 }
 
@@ -27,7 +29,7 @@ export interface Issue extends Document {
   title: string;
   priority: string;
   creatorId: string;
-  done?: boolean;
+  isDone?: boolean;
 }
 
 export interface Message extends Document {
@@ -53,10 +55,9 @@ export interface GameSettings extends Document {
   _id: string;
   scramMasterAsPlayerSetting: boolean;
   changingCardInRoundEndSetting: boolean;
-  isTimerNeededSetting: boolean;
   changeSelectionAfterFlippingCardsSetting: boolean;
   automaticFlipCardsSetting: boolean;
-  scoreTypeSetting: string; //ITypesScoreCards
+  scoreTypeSetting: string;
   scoreTypeShortSetting: string;
   gameId: string;
   timerValuesSetting: {
@@ -67,16 +68,14 @@ export interface GameSettings extends Document {
   automaticAdmitAfterStartGame: boolean;
 }
 
-export interface IObjectType {
-  [index: string]: string | null;
+export interface Round extends Document {
+  gameId: string;
+  roundStatus: ROUND_STATUS;
 }
 
-export interface IGameRound extends Document {
-  _id: string;
-  roundIsStarted: boolean;
-  currentIssue: string;
-  playerCards: IObjectType;
+export interface Timer {
+  minutes: number;
+  seconds: number;
+  ioServer: Server;
   gameId: string;
-  roundStatistics: IObjectType;
-  isActive: Boolean;
 }
