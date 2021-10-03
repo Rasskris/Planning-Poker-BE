@@ -90,8 +90,8 @@ export const emitStartGameRound = (userId: string, gameId: string, gameRoundData
   sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
 };
 
-export const emitUpdateGameRoundData = (userId: string, gameId: string, gameRoundData: IGameRound) => {
-  sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
+export const emitUpdateGameRoundData = (userId: string, gameId: string, playerCards: IObjectType | undefined) => {
+  sockets[userId].to(gameId).emit('updateGameRoundData', playerCards)
 }
 
 export const emitResetGameRoundData = (gameId: string, userId: string) => {

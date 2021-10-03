@@ -71,8 +71,9 @@ class GameRoundController implements Controller {
             }
             // получаем результирующее значение из базы данных с исключением лишних полей
             const resultingGameRoundData = await findGameRound(gameId, currentIssue);
-            if (resultingGameRoundData) emitUpdateGameRoundData(userId, gameId, resultingGameRoundData);
-            res.send(resultingGameRoundData);
+            const playerCards = resultingGameRoundData?.playerCards;
+            if (resultingGameRoundData) emitUpdateGameRoundData(userId, gameId, playerCards);
+            res.send(playerCards);
         } catch (err) {
             next(err);
         }
