@@ -38,7 +38,21 @@ export const PENDING_DEALER_ANSWER_FALSE = {
   isPendingDealerAnswer: false,
 };
 
+export const SCORE_TYPE_FN = 'fibonacci-numbers';
+
+export const SCORE_TYPE_SHORT_FN = 'FN';
+
+export const SCORE_VALUES_FN: Array<string> = ['1', '2', '3', '5', '8', 'coffee', 'unknown'];
+
 export const ONE_VOTE = 1;
+
+export const VALUE_UNKNOWN = 'unknown';
+
+export enum ROUND_STATUS {
+  NOT_STARTED = 'not started',
+  STARTED = 'started',
+  FINISHED = 'finished',
+}
 
 export const userRoles = {
   player: 'player',
