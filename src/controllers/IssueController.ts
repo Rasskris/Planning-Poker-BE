@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import { Controller } from '../interfaces';
 import { Issue } from '../models';
-import { emitIssueAdd, emitIssueUpdate, emitIssueDelete } from '../socket';
-import { FETCH_ERROR, SAVE_ERROR, UPDATE_ERROR, DELETE_ERROR } from '../constants';
+import { emitIssueAdd, emitIssueUpdate, emitIssueDelete, emitIssueListUpdate, emitUpdateRound } from '../socket';
+import { FETCH_ERROR, SAVE_ERROR, UPDATE_ERROR, DELETE_ERROR, ROUND_STATUS } from '../constants';
 
 class IssueController implements Controller {
   public path = '/issues';
@@ -17,7 +17,8 @@ class IssueController implements Controller {
     this.router
       .get(`${this.path}/:gameId`, this.getIssues)
       .post(this.path, this.addIssue)
-      .put(this.path, this.updateIssue)
+      .put(`${this.path}/current`, this.updateCurrentIssue)
+      .put(`${this.path}/done`, this.updateDoneIssue)
       .delete(`${this.path}/:issueId`, this.deleteIssue);
   }
 
@@ -51,17 +52,34 @@ class IssueController implements Controller {
     }
   };
 
-  private updateIssue = async(req: Request, res: Response, next: NextFunction) => {
+  private updateCurrentIssue = async(req: Request, res: Response, next: NextFunction) => {
     try {
       const { id, gameId, creatorId } = req.body;
 
       await this.issue.updateMany({ gameId }, { isCurrent: false });
       await this.issue.updateOne({ _id: id }, { isCurrent: true }, { new: true });
 
-      const updatedIssues = await this.issue.find({ gameId }).exec();
+      const updatedIssueList = await this.issue.find({ gameId }).exec();
 
-      emitIssueUpdate(gameId, creatorId, updatedIssues);
-      res.send(updatedIssues);
+      emitIssueListUpdate(gameId, creatorId, updatedIssueList);
+      res.send(updatedIssueList);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  private updateDoneIssue = async(req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id, gameId, creatorId, statistics } = req.body;
+      const updatedIssue = await this.issue.findOneAndUpdate({ _id: id }, { isDone: true, statistics }, { new: true }).exec();
+
+      if (!updatedIssue) {
+        throw new Error(UPDATE_ERROR);
+      }
+
+      emitIssueUpdate(gameId, creatorId, updatedIssue);
+      emitUpdateRound(gameId, creatorId, ROUND_STATUS.FINISHED);
+      res.send(updatedIssue);
     } catch (err) {
       next(err);
     }
