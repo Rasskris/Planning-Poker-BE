@@ -1,6 +1,6 @@
-import type { Socket } from "socket.io";
-import { Message, Issue, User, GameSettings, IGameRound, IObjectType } from '../interfaces';
-import { findUserById } from "../models";
+import type { Socket } from 'socket.io';
+import { Message, Issue, User, GameSettings } from '../interfaces';
+import { findUserById } from '../models';
 
 const sockets: any = {};
 
@@ -57,8 +57,12 @@ export const emitIssueAdd = (issue: Issue) => {
   sockets[creatorId].to(gameId).emit('issueAdd', issue);
 };
 
-export const emitIssueUpdate = (gameId: string, creatorId: string, issues: Issue[]) => {
-  sockets[creatorId].to(gameId).emit('issueUpdate', issues);
+export const emitIssueUpdate = (gameId: string, creatorId: string, issue: Issue) => {
+  sockets[creatorId].to(gameId).emit('issueUpdate', issue);
+};
+
+export const emitIssueListUpdate = (gameId: string, creatorId: string, issues: Issue[]) => {
+  sockets[creatorId].to(gameId).emit('issueListUpdate', issues);
 };
 
 export const emitIssueDelete = (issue: Issue) => {
@@ -76,30 +80,17 @@ export const emitVote = async (currentUserId: string, gameId: string, victimId: 
 export const emitGameStatus = (userId: string, gameId: string, status: boolean) => {
   sockets[userId].to(gameId).emit('gameStatus', status);
 };
-export const emitGameStatusNewComer = (userId: string) => {
-  const isStarted = true;
 
-  sockets[userId].emit('gameStatus', isStarted);
+export const emitGameSettingsNewComer = (userId: string, gameSettings: GameSettings) => {
+  sockets[userId].emit('gameSettings', gameSettings);
 };
 
-export const emitGameSettings = ( userId: string, gameId: string, gameSettings: GameSettings ) => {
-    sockets[userId].to(gameId).emit('gameSettings', gameSettings)
+export const emitGameSettings = (userId: string, gameId: string, gameSettings: GameSettings ) => {
+  sockets[userId].to(gameId).emit('gameSettings', gameSettings);
 };
 
-export const emitStartGameRound = (userId: string, gameId: string, gameRoundData: IGameRound) => {
-  sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
-};
-
-export const emitUpdateGameRoundData = (userId: string, gameId: string, gameRoundData: IGameRound) => {
-  sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
-}
-
-export const emitResetGameRoundData = (userId: string, gameId: string) => {
-  sockets[userId].to(gameId).emit('resetGameRoundData');
-};
-
-export const emitGetRoundStatistic = (userId: string, gameId: string, roundStatistic: IObjectType) => {
-  sockets[userId].to(gameId).emit('getRoundStatistic', roundStatistic);
+export const emitUpdateRound = (gameId: string, userId: string, roundStatus: string) => {
+  sockets[userId].to(gameId).emit('roundStatus', roundStatus);
 };
 
 export const emitNotifyDealer = (dealerId: string, user: User) => {
@@ -112,4 +103,8 @@ export const emitAdmitToGame = (userId: string) => {
 
 export const emitRejectToGame = (userId: string) => {
   sockets[userId].emit('rejectToGame');
+};
+
+export const emitResetSelectedCard = (gameId: string, userId: string, scoreType: string) => {
+  sockets[userId].to(gameId).emit('resetSelectedCard', scoreType);
 };
