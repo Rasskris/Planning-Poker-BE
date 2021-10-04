@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, Router } from 'express';
-import { Controller } from '../interfaces';
+import { Controller, User as UserType } from '../interfaces';
 import { User, createGame, checkGameStarted, findGameSettingsByGameId, findDealerByGameId } from '../models';
 import { emitLeaveMember, emitNotifyDealer, emitUserUpdate, emitAdmitToGame, emitRejectToGame, emitJoinMember } from '../socket';
 import { upload } from '../multer';
@@ -14,21 +14,26 @@ import {
   PENDING_DEALER_ANSWER_TRUE, 
   PENDING_DEALER_ANSWER_FALSE } from '../constants';
 
+type PendingUsers = {
+  [id: string]: UserType;
+}
 class UserController implements Controller {
   public path = '/users';
   public router = Router();
   private user = User;
+  private pendingUsers: PendingUsers;
 
   constructor() {
     this.initializeRoutes();
+    this.pendingUsers = {};
   }
 
   private initializeRoutes() {
     this.router
       .get(`${this.path}/:gameId`, this.getUsers)
-      .get(`${this.path}/admit/:id`, this.admitUser)
       .get(`${this.path}/reject/:id`, this.rejectUser)
       .post(this.path, upload.single('avatar'), this.addUser)
+      .put(`${this.path}/admit/:id`, this.admitUser)
       .put(this.path, this.updateUser)
       .delete(this.path, this.deleteUser);
   }
@@ -66,13 +71,8 @@ class UserController implements Controller {
         return;
       }
       const user = new this.user({ ...userData });
-      const savedUser = await user.save();
+      const { id, gameId } = user;
       
-      if (!savedUser) {
-        throw new Error(SAVE_ERROR);
-      }
-      const { gameId } = savedUser;
-
       const isGameStarted = await checkGameStarted(gameId);
       const currentGameSettings = await findGameSettingsByGameId(gameId);
       const isAutomaticAdmitAfterStartGame = currentGameSettings?.automaticAdmitAfterStartGame;
@@ -84,15 +84,29 @@ class UserController implements Controller {
         if (!dealer) {
           throw new Error(SAVE_ERROR);
         }
-        emitNotifyDealer(dealer.id, savedUser);
+        this.pendingUsers[id] = user;
 
-        res.send({ user: savedUser, ...PENDING_DEALER_ANSWER_TRUE, ...AUTO_ADMITED_FALSE });
+        emitNotifyDealer(dealer.id, user);
+
+        res.send({ user, ...PENDING_DEALER_ANSWER_TRUE, ...AUTO_ADMITED_FALSE });
         return;
       } else if (isGameStarted && isAutomaticAdmitAfterStartGame) {
+        const savedUser = await user.save();
+      
+        if (!savedUser) {
+          throw new Error(SAVE_ERROR);
+        }
+
         res.send({ user: savedUser, ...PENDING_DEALER_ANSWER_FALSE, ...AUTO_ADMITED_TRUE });
 
         ioServer.to(gameId).emit('memberJoin', savedUser);
         return;
+      }
+
+      const savedUser = await user.save();
+      
+      if (!savedUser) {
+        throw new Error(SAVE_ERROR);
       }
 
       res.send({ user: savedUser, ...PENDING_DEALER_ANSWER_FALSE, ...AUTO_ADMITED_FALSE });
@@ -144,16 +158,18 @@ class UserController implements Controller {
   private admitUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const user = await this.user.findOne({ _id: id }).exec();
-
-      if (user) {
-        emitAdmitToGame(id);
+      const savedUser = await this.pendingUsers[id].save();
       
-        emitJoinMember(user);
-  
-        res.send({ id });
+      if (!savedUser) {
+        throw new Error(SAVE_ERROR);
       }
-    } catch (err) {
+
+      emitAdmitToGame(id);
+      
+      emitJoinMember(savedUser);
+  
+      res.send({ id });
+      } catch (err) {
       next(err);
     }
   };
