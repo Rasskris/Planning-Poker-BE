@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { Document } from 'mongoose';
+import type { Server } from 'socket.io';
 
 export interface User extends Document {
   _id: string;
@@ -81,3 +82,10 @@ export interface IGameRound extends Document {
   isActive: Boolean;
   scoreTypeValue: string;
 }
+
+export interface Timer {
+  minutes: number;
+  seconds: number;
+  ioServer: Server;
+  gameId: string;
+};
