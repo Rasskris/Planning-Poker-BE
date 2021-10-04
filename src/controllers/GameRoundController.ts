@@ -1,17 +1,26 @@
 import { Request, Response, NextFunction, Router } from 'express';
-import { Controller, IObjectType } from '../interfaces';
+import { Controller, IObjectType, Timer } from '../interfaces';
 import { FETCH_ERROR, SAVE_ERROR, DELETE_ERROR, userRoles } from '../constants';
-import { findGameRound, GameRound } from '../models';
-import { emitGetRoundStatistic, emitResetGameRoundData, emitStartGameRound, emitUpdateGameRoundData, emitUpdateGameRoundStatistics } from '../socket';
+import { findGameRound, GameRound, GameSettings } from '../models';
+import { emitResetGameRoundData, emitStartGameRound, emitUpdateGameRoundData, emitUpdateGameRoundStatistics } from '../socket';
+import { SocketTimer } from '../utils/SocketTimer';
+
+type Timers = {
+    [key: string]: SocketTimer;
+  }
+
 
 class GameRoundController implements Controller {
     public path = '/gameround';
     public router = Router();
     private gameRound = GameRound;
+    private timers: Timers;
+    private gameSettings = GameSettings;
 
 
     constructor() {
         this.initializeRoutes();
+        this.timers = {};
     }
     
     private initializeRoutes() {
@@ -50,6 +59,17 @@ class GameRoundController implements Controller {
                 if (!savedRoundData) {
                   throw new Error(SAVE_ERROR);
                 }
+
+            //останавливаем и удаляем таймер, если он был запущен
+            if (this.timers[gameId]) this.timers[gameId].clearTimer();
+            //запускаем таймер
+            const ioServer = req.app.get('socketio');
+            const gameSettings = await this.gameSettings.findOne({ gameId }).exec();
+            const minutes = gameSettings?.timerValuesSetting.minutes;
+            const seconds = gameSettings?.timerValuesSetting.seconds;
+            if (minutes !== undefined && seconds !== undefined) {
+              this.startTimer({ minutes, seconds, ioServer, gameId });
+            }
             // получаем результирующее значение из базы данных с исключением лишних полей
             const resultingGameRoundData = await findGameRound(gameId, currentIssue);
             if (resultingGameRoundData) emitStartGameRound(userId, gameId, resultingGameRoundData);
@@ -135,6 +155,11 @@ class GameRoundController implements Controller {
             next(err);
         }
     }
+
+    private startTimer = ({ minutes, seconds, ioServer, gameId }: Timer) =>  {
+        this.timers[gameId] = new SocketTimer({ minutes, seconds, ioServer, gameId });
+        this.timers[gameId].startCountdown();
+      }
 
 }
 
