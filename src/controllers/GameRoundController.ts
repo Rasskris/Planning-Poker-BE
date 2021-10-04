@@ -1,17 +1,26 @@
 import { Request, Response, NextFunction, Router } from 'express';
-import { Controller, IObjectType } from '../interfaces';
+import { Controller, IObjectType, Timer } from '../interfaces';
 import { FETCH_ERROR, SAVE_ERROR, DELETE_ERROR, userRoles } from '../constants';
-import { findGameRound, GameRound } from '../models';
-import { emitGetRoundStatistic, emitResetGameRoundData, emitStartGameRound, emitUpdateGameRoundData, emitUpdateGameRoundStatistics } from '../socket';
+import { findGameRound, GameRound, GameSettings } from '../models';
+import { emitResetGameRoundData, emitStartGameRound, emitUpdateGameRoundData, emitUpdateGameRoundStatistics } from '../socket';
+import { SocketTimer } from '../utils/SocketTimer';
+
+type Timers = {
+    [key: string]: SocketTimer;
+  }
+
 
 class GameRoundController implements Controller {
     public path = '/gameround';
     public router = Router();
     private gameRound = GameRound;
+    private timers: Timers;
+    private gameSettings = GameSettings;
 
 
     constructor() {
         this.initializeRoutes();
+        this.timers = {};
     }
     
     private initializeRoutes() {
@@ -28,29 +37,40 @@ class GameRoundController implements Controller {
         try {
             const { gameId } = req.params;
             const {currentIssue, playerCards, userId, scoreTypeValue } = req.body;
-            // формирование объекта с ключами (игрок:карта) из массива игроков
-            // необходимо в т.ч. для обнуления значений карт в случае рестарта раунда
-            const objPlayerCards = {} as IObjectType;
+            // forming an object with keys (player: card) from an array of players
+            // necessary incl. to reset card values ​​in case of round restart
+            const newPlayerCards = {} as IObjectType;
                playerCards.forEach((playerCard: string) => {
-                objPlayerCards[playerCard] = null;
+                newPlayerCards[playerCard] = null;
             });
-            const objRoundStatistics = {} as IObjectType;
-            // удаляет старые данные о таких же раундах текущей игры, если они были (в случае рестарта раунда)
+            const newRoundStatistics = {} as IObjectType;
+            // deletes old data about the same rounds of the current game, if any (in case of a round restart)
             await this.gameRound.findOneAndDelete({ gameId, currentIssue }).exec();
-            // создаём коллекцию в базе данных нового раунда
+            // create a collection in the database for a new round
             const gameRound = new this.gameRound({
                 currentIssue, 
-                playerCards: objPlayerCards, 
+                playerCards: newPlayerCards, 
                 gameId, 
                 roundIsStarted: true, 
                 isActive: true, 
-                roundStatistics: objRoundStatistics,
+                roundStatistics: newRoundStatistics,
                 scoreTypeValue })
             const savedRoundData = await gameRound.save();
                 if (!savedRoundData) {
                   throw new Error(SAVE_ERROR);
                 }
-            // получаем результирующее значение из базы данных с исключением лишних полей
+
+            //stop and delete the timer, if it was started
+            if (this.timers[gameId]) this.timers[gameId].clearTimer();
+            //start the timer
+            const ioServer = req.app.get('socketio');
+            const gameSettings = await this.gameSettings.findOne({ gameId }).exec();
+            const minutes = gameSettings?.timerValuesSetting.minutes;
+            const seconds = gameSettings?.timerValuesSetting.seconds;
+            if (minutes !== undefined && seconds !== undefined) {
+              this.startTimer({ minutes, seconds, ioServer, gameId });
+            }
+            // get the resulting value from the database, excluding unnecessary fields
             const resultingGameRoundData = await findGameRound(gameId, currentIssue);
             if (resultingGameRoundData) emitStartGameRound(userId, gameId, resultingGameRoundData);
             res.send(resultingGameRoundData);
@@ -69,7 +89,7 @@ class GameRoundController implements Controller {
             if(!savedRoundData) {
                 throw new Error(FETCH_ERROR);
             }
-            // получаем результирующее значение из базы данных с исключением лишних полей
+            // get the resulting value from the database, excluding unnecessary fields
             const resultingGameRoundData = await findGameRound(gameId, currentIssue);
             const playerCards = resultingGameRoundData?.playerCards;
             if (resultingGameRoundData) emitUpdateGameRoundData(userId, gameId, playerCards);
@@ -135,6 +155,11 @@ class GameRoundController implements Controller {
             next(err);
         }
     }
+
+    private startTimer = ({ minutes, seconds, ioServer, gameId }: Timer) =>  {
+        this.timers[gameId] = new SocketTimer({ minutes, seconds, ioServer, gameId });
+        this.timers[gameId].startCountdown();
+      }
 
 }
 

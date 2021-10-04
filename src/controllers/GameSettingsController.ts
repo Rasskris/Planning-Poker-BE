@@ -39,16 +39,14 @@ class GameSettingsController implements Controller {
         try {
             const { gameId } = req.params;
             const {userId, settings: gameSettingsData} = req.body;
-            const presenceSettCurrentGame = await this.gameSettings.find({ gameId }).exec();
-            if (presenceSettCurrentGame.length === 0) {
-               const gameSettings = new this.gameSettings({ ...gameSettingsData, gameId });
-               const savedSettings = await gameSettings.save();
-               if(!savedSettings) {
-                 throw new Error(SAVE_ERROR);
-               }
+            await this.gameSettings.findOneAndDelete({ gameId }).exec();
+            const newGameSettings = new this.gameSettings({ ...gameSettingsData, gameId });
+            const savedSettings = await newGameSettings.save();
+            if(!savedSettings) {
+              throw new Error(SAVE_ERROR);
             }
-            emitGameSettings(userId, gameId, gameSettingsData)
-            res.send(gameSettingsData);
+            emitGameSettings(userId, gameId, newGameSettings)
+            res.send(newGameSettings);
         } catch (err) {
           next(err);
         }

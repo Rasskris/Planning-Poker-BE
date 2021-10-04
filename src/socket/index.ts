@@ -82,8 +82,8 @@ export const emitGameStatusNewComer = (userId: string) => {
   sockets[userId].emit('gameStatus', isStarted);
 };
 
-export const emitGameSettings = ( userId: string, gameId: string, gameSettings: GameSettings ) => {
-    sockets[userId].to(gameId).emit('gameSettings', gameSettings)
+export const emitGameSettings = ( userId: string, gameId: string, newGameSettings: GameSettings ) => {
+    sockets[userId].to(gameId).emit('gameSettings', newGameSettings)
 };
 
 export const emitStartGameRound = (userId: string, gameId: string, gameRoundData: IGameRound) => {
