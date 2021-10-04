@@ -90,12 +90,12 @@ export const emitStartGameRound = (userId: string, gameId: string, gameRoundData
   sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
 };
 
-export const emitUpdateGameRoundData = (userId: string, gameId: string, gameRoundData: IGameRound) => {
-  sockets[userId].to(gameId).emit('startGameRound', gameRoundData)
+export const emitUpdateGameRoundData = (userId: string, gameId: string, playerCards: IObjectType | undefined) => {
+  sockets[userId].to(gameId).emit('updateGameRoundData', playerCards)
 }
 
-export const emitResetGameRoundData = (userId: string, gameId: string) => {
-  sockets[userId].to(gameId).emit('resetGameRoundData');
+export const emitResetGameRoundData = (gameId: string, userId: string) => {
+    sockets[userId].to(gameId).emit('resetGameRoundData');
 };
 
 export const emitGetRoundStatistic = (userId: string, gameId: string, roundStatistic: IObjectType) => {
@@ -113,3 +113,8 @@ export const emitAdmitToGame = (userId: string) => {
 export const emitRejectToGame = (userId: string) => {
   sockets[userId].emit('rejectToGame');
 };
+
+export const emitUpdateGameRoundStatistics = (userId: string, gameId: string, roundStatistics: IObjectType) => {
+  sockets[userId].to(gameId).emit('updateGameRoundStatistics', roundStatistics);
+};
+

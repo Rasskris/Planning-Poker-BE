@@ -79,4 +79,5 @@ export interface IGameRound extends Document {
   gameId: string;
   roundStatistics: IObjectType;
   isActive: Boolean;
+  scoreTypeValue: string;
 }

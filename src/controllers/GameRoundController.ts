@@ -2,7 +2,7 @@ import { Request, Response, NextFunction, Router } from 'express';
 import { Controller, IObjectType } from '../interfaces';
 import { FETCH_ERROR, SAVE_ERROR, DELETE_ERROR, userRoles } from '../constants';
 import { findGameRound, GameRound } from '../models';
-import { emitGetRoundStatistic, emitResetGameRoundData, emitStartGameRound, emitUpdateGameRoundData } from '../socket';
+import { emitGetRoundStatistic, emitResetGameRoundData, emitStartGameRound, emitUpdateGameRoundData, emitUpdateGameRoundStatistics } from '../socket';
 
 class GameRoundController implements Controller {
     public path = '/gameround';
@@ -16,17 +16,18 @@ class GameRoundController implements Controller {
     
     private initializeRoutes() {
         this.router
-          .get(`${this.path}/:gameId`, this.getDataAllRoomsOfGame)
+          .get(`${this.path}/:gameId`, this.getDataAllRoundsOfGame)
           .post(`${this.path}/:gameId`, this.addGameRoundData)
           .put(`${this.path}/usersUpdate/:gameId`, this.updateGameRoundUsers)
           .put(`${this.path}/roundStatistics/:gameId`, this.updateGameRoundStatistics)
-          .get(`${this.path}/roundStatistics/:gameId`, this.getRoundStatistic)
+          .delete(`${this.path}/:gameId`, this.deleteGameRoundData)
+          .delete(`${this.path}/reset/:gameId`, this.resetGameRoundData)
       }
 
     private addGameRoundData = async(req: Request, res: Response, next: NextFunction) => {
         try {
             const { gameId } = req.params;
-            const {currentIssue, playerCards, userId } = req.body;
+            const {currentIssue, playerCards, userId, scoreTypeValue } = req.body;
             // формирование объекта с ключами (игрок:карта) из массива игроков
             // необходимо в т.ч. для обнуления значений карт в случае рестарта раунда
             const objPlayerCards = {} as IObjectType;
@@ -43,7 +44,8 @@ class GameRoundController implements Controller {
                 gameId, 
                 roundIsStarted: true, 
                 isActive: true, 
-                roundStatistics: objRoundStatistics })
+                roundStatistics: objRoundStatistics,
+                scoreTypeValue })
             const savedRoundData = await gameRound.save();
                 if (!savedRoundData) {
                   throw new Error(SAVE_ERROR);
@@ -60,8 +62,7 @@ class GameRoundController implements Controller {
     private updateGameRoundUsers = async(req: Request, res: Response, next: NextFunction) => {
         try {
             const { gameId } = req.params;
-            const { gameRoundData, valueSelectedGameCard, userId } = req.body;
-            const { currentIssue } = gameRoundData;
+            const { currentIssue, valueSelectedGameCard, userId } = req.body;
             const updateGameRoundData = await this.gameRound.findOne({ gameId, currentIssue }).exec();
             if (updateGameRoundData) updateGameRoundData.playerCards[`${userId}`] = valueSelectedGameCard;
             const savedRoundData = await this.gameRound.findOneAndUpdate({ gameId, currentIssue }, { ...updateGameRoundData }).exec();
@@ -70,8 +71,9 @@ class GameRoundController implements Controller {
             }
             // получаем результирующее значение из базы данных с исключением лишних полей
             const resultingGameRoundData = await findGameRound(gameId, currentIssue);
-            if (resultingGameRoundData) emitUpdateGameRoundData(userId, gameId, resultingGameRoundData);
-            res.send(resultingGameRoundData);
+            const playerCards = resultingGameRoundData?.playerCards;
+            if (resultingGameRoundData) emitUpdateGameRoundData(userId, gameId, playerCards);
+            res.send(playerCards);
         } catch (err) {
             next(err);
         }
@@ -80,28 +82,24 @@ class GameRoundController implements Controller {
     private updateGameRoundStatistics = async(req: Request, res: Response, next: NextFunction) => {
         try {
             const { gameId } = req.params;
-            const { userId, gameRoundData } = req.body;
-            const { currentIssue, roundStatistics } = gameRoundData;
+            const { userId, gameRoundData, roundStatistics, currentIssue } = req.body;
             const updateGameRoundData = await this.gameRound.findOne({ gameId, currentIssue }).exec();
             if (updateGameRoundData) updateGameRoundData.roundStatistics = roundStatistics;
             const savedRoundData = await this.gameRound.findOneAndUpdate({ gameId, currentIssue }, { ...updateGameRoundData }).exec();
             if(!savedRoundData) {
                 throw new Error(FETCH_ERROR);
             }
-            // получаем результирующее значение из базы данных с исключением лишних полей
-            // const resultingGameRoundData = await findGameRound(gameId, currentIssue);
-            // if (resultingGameRoundData) emitUpdateGameRoundData(userId, gameId, resultingGameRoundData);
-            emitResetGameRoundData(userId, gameId);
-            res.send(true);
+            emitUpdateGameRoundStatistics(userId, gameId, roundStatistics);
+            res.send(roundStatistics);
         } catch (err) {
             next(err);
         }
     }
 
-    private getDataAllRoomsOfGame = async(req: Request, res: Response, next: NextFunction) => {
+    private getDataAllRoundsOfGame = async(req: Request, res: Response, next: NextFunction) => {
         try {
             const { gameId } = req.params;
-            const gameRounds = await this.gameRound.find({ gameId }).exec();
+            const gameRounds = await this.gameRound.find({$and: [{gameId}, {roundStatistics: {$exists:true}}, {roundStatistics: {$ne: {}}}] }).exec();
 
             if(!gameRounds) {
                 throw new Error(FETCH_ERROR);
@@ -113,25 +111,30 @@ class GameRoundController implements Controller {
         }
     }
 
-    private getRoundStatistic = async(req: Request, res: Response, next: NextFunction) => {
+    private deleteGameRoundData = async(req: Request, res: Response, next: NextFunction) => {
         try {
             const { gameId } = req.params;
             const { userId, currentIssue } = req.body;
-            const gameRoundData = await this.gameRound.findOne({ gameId, currentIssue }).exec();
-
-            if(!gameRoundData) {
+            const deleteGameRoundData = await this.gameRound.findOneAndDelete({ gameId, currentIssue }).exec();
+            if(!deleteGameRoundData) {
                 throw new Error(FETCH_ERROR);
             }
-            const roundStatistic = gameRoundData.roundStatistics;
-
-            emitGetRoundStatistic(userId, gameId, roundStatistic);
-            res.send(roundStatistic);
+            res.send(deleteGameRoundData);
         } catch (err) {
             next(err);
         }
     }
 
-
+    private resetGameRoundData = async(req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { gameId } = req.params;
+            const { userId } = req.body;
+            emitResetGameRoundData(gameId, userId);
+            res.send(true);
+        } catch (err) {
+            next(err);
+        }
+    }
 
 }
 
