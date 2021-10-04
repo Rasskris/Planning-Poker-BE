@@ -39,7 +39,8 @@ class App {
       .use(urlencoded({ limit: '50mb', extended: true }))
       .use(cors())
       .use(errorMiddleware)
-      .use(loggerMiddleware);
+      .use(loggerMiddleware)
+      .use(express.static('public'));
   }
 
   private initializeMongoDB() {
