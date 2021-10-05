@@ -8,11 +8,8 @@ export const onConnection = (socket: Socket) => {
   const { userId } = socket.handshake.auth;
   sockets[userId] = socket;
 
-  socket.on('joinToRoom', async (gameId) =>  {
-    const user = await findUserById(userId);
-    if (user) {
-      joinToRoom(socket, gameId);
-    }
+  socket.on('joinToRoom', (gameId) =>  {
+    joinToRoom(socket, gameId);
   });
 
   socket.on('disconnect', (reason) => {
@@ -82,8 +79,8 @@ export const emitGameStatusNewComer = (userId: string) => {
   sockets[userId].emit('gameStatus', isStarted);
 };
 
-export const emitGameSettings = ( userId: string, gameId: string, newGameSettings: GameSettings ) => {
-    sockets[userId].to(gameId).emit('gameSettings', newGameSettings)
+export const emitGameSettings = ( userId: string, gameId: string, gameSettings: GameSettings ) => {
+    sockets[userId].to(gameId).emit('gameSettings', gameSettings)
 };
 
 export const emitStartGameRound = (userId: string, gameId: string, gameRoundData: IGameRound) => {
