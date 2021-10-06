@@ -54,6 +54,12 @@ export const emitIssueAdd = (issue: Issue) => {
   sockets[creatorId].to(gameId).emit('issueAdd', issue);
 };
 
+export const emitIssueListAdd = (issueList: Issue[]) => {
+  const { creatorId, gameId } = issueList[0];
+
+  sockets[creatorId].to(gameId).emit('issueListAdd', issueList);
+};
+
 export const emitIssueUpdate = (gameId: string, creatorId: string, issues: Issue[]) => {
   sockets[creatorId].to(gameId).emit('issueUpdate', issues);
 };
