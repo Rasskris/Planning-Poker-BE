@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { userRoles, VALUE_UNKNOWN } from '../constants';
 import { User } from '../interfaces';
 
 const UserSchema = new mongoose.Schema({
@@ -9,12 +8,11 @@ const UserSchema = new mongoose.Schema({
   },
   lastName: {
     type: String,
+    required: true,
   },
-  joPosition: {
+  jobPosition: {
     type: String,
-  },
-  avatar: {
-    type: String,
+    required: true,
   },
   role: {
     type: String,
@@ -30,43 +28,9 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-const User  = mongoose.model<User>('User', UserSchema);
+export const UserModel  = mongoose.model<User>('User', UserSchema);
 
-const deleteUsersByGameId = (gameId: string) => {
-  return User.deleteMany({ gameId }).exec();
-};
 
-const findUserById = (userId: string) => {
-  return User.findById(userId).exec();
-};
-
-const findUsersByGameId = (gameId: string) => {
-  return User.find({ gameId }).exec();
-};
-
-const deleteUserById = (id: string) => {
-  return User.findOneAndDelete({ _id: id }).exec();
-};
-
-const findDealerByGameId = (gameId: string) => {
-  return User.findOne({ gameId, role: userRoles.dealer }).exec();
-};
-
-const resetSelectedCard = (gameId: string, scoreType: string) => {
-  const selectedCard = {
-    scoreType,
-    scoreValue: VALUE_UNKNOWN,
-  };
-
-  return User.updateMany({ gameId }, { selectedCard }).exec();
-};
-
-export { 
-  User, 
-  deleteUsersByGameId, 
-  findUserById, 
-  deleteUserById, 
-  findUsersByGameId, 
-  findDealerByGameId,
-  resetSelectedCard,
+export const findUserById = (userId: string) => {
+  return UserModel.findById(userId).exec();
 };
