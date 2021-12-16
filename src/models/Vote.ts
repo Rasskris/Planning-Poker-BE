@@ -6,12 +6,17 @@ const VoteSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  countUsers: {
+  countUsersWithoutVictim: {
     type: Number,
     required: true,
   },
-  countVotesFor: {
+  countVotesForKick: {
     type: Number,
+    default: 0,
+  },
+  countVotesAgainstKick: {
+    type: Number,
+    default: 0,
   },
   victimId: {
     type: String,
@@ -19,6 +24,5 @@ const VoteSchema = new mongoose.Schema({
   }
 });
 
-const Vote = mongoose.model<Vote>('Vote', VoteSchema);
+export const VoteModel = mongoose.model<Vote>('Vote', VoteSchema);
 
-export { Vote };
