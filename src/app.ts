@@ -7,7 +7,8 @@ import { json, urlencoded } from 'body-parser';
 import mongoose from 'mongoose';
 import { errorMiddleware, loggerMiddleware } from './middleware';
 import { onConnection } from './socket';
-import { UserController, GameController, MessageController, IssueController, VoteController, GameSettingsController, RoundController } from './controllers';
+import { UserController, GameController, MessageController, IssueController, VoteController, SettingsController, RoundController } from './controllers';
+import { GameService, IssuesService, MessageService, RoundsService, SettingsService, UsersService, VoteService } from './services';
 
 class App {
   public app: express.Application;
@@ -21,10 +22,11 @@ class App {
     this.server = createServer(this.app);
     this.ioServer = new Server(this.server);
 
-    this.initializeMiddlewares();
     this.initializeMongoDB();
+    this.initializeMiddlewares();
     this.initializeSocketConnection();
     this.initializeControllers();
+    this.initializeErrorHandling();
   }
 
   public listen() {
@@ -38,8 +40,11 @@ class App {
       .use(json({ limit: '50mb' }))
       .use(urlencoded({ limit: '50mb', extended: true }))
       .use(cors())
-      .use(errorMiddleware)
       .use(loggerMiddleware);
+  }
+
+  private initializeErrorHandling() {
+    this.app.use(errorMiddleware);
   }
 
   private initializeMongoDB() {
@@ -53,14 +58,22 @@ class App {
   }
 
   private initializeControllers() {
+    const settingsService = new SettingsService();
+    const messageService = new MessageService();
+    const issuesService = new IssuesService();
+    const voteService = new VoteService();
+    const gameService = new GameService();
+    const roundService = new RoundsService();
+    const usersService = new UsersService(gameService, settingsService);
+
     const controllers = [
-      new GameController(),
-      new UserController(),
-      new MessageController(),
-      new IssueController(),
-      new VoteController(),
-      new GameSettingsController(),
-      new RoundController(),
+      new GameController(gameService),
+      new UserController(usersService, gameService),
+      new MessageController(messageService),
+      new IssueController(issuesService),
+      new VoteController(voteService, usersService),
+      new SettingsController(settingsService),
+      new RoundController(roundService),
     ];
 
     controllers.forEach((controller) => {
