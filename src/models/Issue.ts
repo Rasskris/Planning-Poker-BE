@@ -19,11 +19,11 @@ const IssueSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  isDone: {
+  isCurrent: {
     type: Boolean,
     default: false,
   },
-  isCurrent: {
+  isDone: {
     type: Boolean,
     default: false,
   },
@@ -32,14 +32,4 @@ const IssueSchema = new mongoose.Schema({
   }
 });
 
-const Issue = mongoose.model<Issue>('Issue', IssueSchema);
-
-const deleteIssueByGameId = (gameId: string) => {
-  return Issue.deleteOne({ gameId }).exec();
-};
-
-const deleteIssuesByGameId = (gameId: string) => {
-  return Issue.deleteMany({ gameId }).exec();
-};
-
-export { Issue, deleteIssueByGameId, deleteIssuesByGameId };
+export const IssueModel = mongoose.model<Issue>('Issue', IssueSchema);
