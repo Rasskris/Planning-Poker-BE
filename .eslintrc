@@ -1,0 +1,23 @@
+{
+	"env": {
+		"browser": true,
+		"node": true,
+		"es2021": true
+	},
+	"extends": "airbnb-typescript",
+	"parserOptions": {
+		"ecmaVersion": 2021,
+		"project": "./tsconfig.json"
+	},
+	"rules": {
+		"@typescript-eslint/no-implied-eval": "off",
+		"array-callback-return": "off",
+		"class-methods-use-this": "off",
+		"consistent-return": "off",
+		"import/no-extraneous-dependencies": "off",
+		"import/prefer-default-export": "off",
+		"linebreak-style": "off",
+		"object-curly-newline": "off",
+		"no-param-reassign": "warn"
+	}
+}
