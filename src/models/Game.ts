@@ -8,17 +8,8 @@ const GameSchema = new mongoose.Schema({
   },
   isStarted: {
     type: Boolean,
+    default: false,
   }
 });
 
-const Game = mongoose.model<Game>('Game', GameSchema);
-
-const createGame = () => {
-  return new Game({ isStarted: false }).save();
-};
-
-const checkGameStarted = (id: string) => {
-  return Game.exists({ _id: id, isStarted: true });
-};
-
-export { Game, createGame, checkGameStarted };
+export const GameModel = mongoose.model<Game>('Game', GameSchema);
