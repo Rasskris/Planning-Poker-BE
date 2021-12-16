@@ -3,32 +3,44 @@ import { Document } from 'mongoose';
 import type { Server } from 'socket.io';
 import { ROUND_STATUS } from './constants';
 
+export interface Controller {
+  path: string;
+  router: Router;
+}
+
+export interface SelectedCard {
+  scoreType: string;
+  scoreValue: string;
+}
 export interface User extends Document {
   _id: string;
   gameId: string;
   firstName: string;
-  lastName?: string;
-  jobPosition?: string;
+  lastName: string;
+  jobPosition: string;
   role: string;
-  avatar?: string;
-  selectedCard?: {
-    scoreType: string;
-    scoreValue: string;
-  };
+  selectedCard?: SelectedCard;
 }
 
 export interface Game extends Document {
   _id: string;
   creatorId?: string;
-  isStarted?: boolean;
+  isStarted: boolean;
+}
+
+export interface IssueStatistics {
+  scoreType: string;
+  scoreValue: string;
+  percent: number;
 }
 
 export interface Issue extends Document {
   _id: string;
   gameId: string;
+  creatorId: string;
   title: string;
   priority: string;
-  creatorId: string;
+  statistics?: Array<IssueStatistics>,
   isDone?: boolean;
 }
 
@@ -39,28 +51,21 @@ export interface Message extends Document {
   sender: User;
 }
 
-export interface Controller {
-  path: string;
-  router: Router;
-}
-
-export interface Vote {
+export interface Vote extends Document {
   gameId: string;
-  countUsers: number;
-  countVotesFor: number;
+  countUsersWithoutVictim: number;
+  countVotesForKick: number;
+  countVotesAgainstKick: number;
   victimId: string;
 }
 
-export interface GameSettings extends Document {
+export interface Settings extends Document {
   _id: string;
-  scramMasterAsPlayerSetting: boolean;
-  changingCardInRoundEndSetting: boolean;
-  changeSelectionAfterFlippingCardsSetting: boolean;
-  automaticFlipCardsSetting: boolean;
-  scoreTypeSetting: string;
-  scoreTypeShortSetting: string;
+  scramMasterAsPlayer: boolean;
+  scoreType: string;
+  scoreTypeShort: string;
   gameId: string;
-  timerValuesSetting: {
+  timerValues: {
     minutes: number;
     seconds: number;
   };
