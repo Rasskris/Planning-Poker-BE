@@ -1,5 +1,5 @@
 import type { Socket } from 'socket.io';
-import { Message, Issue, User, GameSettings } from '../interfaces';
+import { Message, Issue, User, Settings } from '../interfaces';
 import { findUserById } from '../models';
 
 const sockets: any = {};
@@ -8,11 +8,8 @@ export const onConnection = (socket: Socket) => {
   const { userId } = socket.handshake.auth;
   sockets[userId] = socket;
 
-  socket.on('joinToRoom', async (gameId) =>  {
-    const user = await findUserById(userId);
-    if (user) {
-      joinToRoom(socket, gameId);
-    }
+  socket.on('joinToRoom', (gameId) =>  {
+    joinToRoom(socket, gameId);
   });
 
   socket.on('disconnect', (reason) => {
@@ -29,22 +26,22 @@ export const leaveRoom = (socket: Socket, gameId: string) => {
 };
 
 export const emitJoinMember = (user: User) => {
-  const {id, gameId } = user;
+  const { id, gameId } = user;
 
   sockets[id].to(gameId).emit('memberJoin', user);
 };
 
-export const emitLeaveMember = (currentUserId: string, deletedUser: User) => {
-  const {id: deletedUserId, gameId, firstName } = deletedUser;
+export const emitLeaveMember = (deletedUser: User) => {
+  const { id: deletedUserId, gameId } = deletedUser;
 
-  sockets[currentUserId].to(gameId).emit('memberLeave', deletedUserId);
+  sockets[deletedUserId].to(gameId).emit('memberLeave', deletedUserId);
   leaveRoom(sockets[deletedUserId], gameId);
 };
 
 export const emitUserUpdate = (updatedUser: User) => {
-const { id: userId, gameId } = updatedUser;
+  const { id: userId, gameId } = updatedUser;
 
-sockets[userId].to(gameId).emit('userUpdate', updatedUser);
+  sockets[userId].to(gameId).emit('userUpdate', updatedUser);
 };
 
 export const emitMessage = (userId: string, gameId: string, message: Message) => {
@@ -81,16 +78,20 @@ export const emitGameStatus = (userId: string, gameId: string, status: boolean) 
   sockets[userId].to(gameId).emit('gameStatus', status);
 };
 
-export const emitGameSettingsNewComer = (userId: string, gameSettings: GameSettings) => {
-  sockets[userId].emit('gameSettings', gameSettings);
+export const emitSettingsNewComer = (userId: string, settings: Settings) => {
+  sockets[userId].emit('settings', settings);
 };
 
-export const emitGameSettings = (userId: string, gameId: string, gameSettings: GameSettings ) => {
-  sockets[userId].to(gameId).emit('gameSettings', gameSettings);
+export const emitSettings = (userId: string, gameId: string, settings: Settings ) => {
+  sockets[userId].to(gameId).emit('settings', settings);
 };
 
-export const emitUpdateRound = (gameId: string, userId: string, roundStatus: string) => {
-  sockets[userId].to(gameId).emit('roundStatus', roundStatus);
+export const emitStartRound = (gameId: string, userId: string) => {
+  sockets[userId].to(gameId).emit('roundStart');
+};
+
+export const emitFinishRound = (gameId: string, userId: string) => {
+  sockets[userId].to(gameId).emit('roundFinish');
 };
 
 export const emitNotifyDealer = (dealerId: string, user: User) => {
