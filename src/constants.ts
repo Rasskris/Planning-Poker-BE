@@ -49,7 +49,7 @@ export const ONE_VOTE = 1;
 export const VALUE_UNKNOWN = 'unknown';
 
 export enum ROUND_STATUS {
-  NOT_STARTED = 'not started',
+  NOT_STARTED = 'notStarted',
   STARTED = 'started',
   FINISHED = 'finished',
 }
