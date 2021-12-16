@@ -20,10 +20,5 @@ const MessageSchema = new mongoose.Schema({
   },
 });
 
-const Message = mongoose.model<Message>('Message', MessageSchema);
+export const MessageModel = mongoose.model<Message>('Message', MessageSchema);
 
-const deleteMessagesByGameId = (gameId: string) => {
-  return Message.deleteMany({ gameId }).exec();
-};
-
-export { Message, deleteMessagesByGameId };
