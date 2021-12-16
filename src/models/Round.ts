@@ -13,14 +13,4 @@ const RoundSchema = new mongoose.Schema({
   },
 });
 
-const Round = mongoose.model<Round>('Round', RoundSchema);
-
-const createRound = (gameId: string) => {
-  return new Round({ gameId }).save();
-};
-
-const deleteRoundByGameId = (gameId: string) => {
-  return Round.deleteOne({ gameId }).exec();
-};
-
-export { Round, createRound, deleteRoundByGameId };
+export const RoundModel = mongoose.model<Round>('Round', RoundSchema);
